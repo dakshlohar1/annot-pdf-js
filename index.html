@@ -1,0 +1,639 @@
+<!-- index.htm -->
+<html>
+
+<head>
+        <script src="https://unpkg.com/vanilla-picker@2"></script>
+        <script src="./_bundles/pdfAnnotate.js" async></script>
+        <style>
+                .buttonClass {
+                        margin-top: 5px;
+                        margin-bottom: 5px;
+                }
+        </style>
+</head>
+
+<body>
+        <div id="app"></div>
+        <hr>
+        Filename:<input style="margin-left: 10px;" type="text" id="inputFileName" value="./test_documents/test2.pdf">
+        <button id="reloadFile" type="button">Reload</button>
+        <hr>
+        <div> <button id="textAnnotColorPicker">Choose Color</button>
+                <input type="checkbox" id="textAnnotOpen" name="textAnnotOpen"><label for="textAnnotOpen">Open?</label>
+                <p>
+                        Opacity:<input style="margin-left: 10px;" type="number" id="textAnnotOpacity" value="0.5">
+                </p>
+                <p>
+                        Icon:
+                <fieldset>
+                        <input type="radio" id="comment" name="icon">
+                        <label for="comment">Comment</label>
+                        <input type="radio" id="Key" name="icon">
+                        <label for="Key">Key</label>
+                        <input type="radio" id="Note" name="icon" checked>
+                        <label for="comment">Note</label>
+                        <input type="radio" id="help" name="icon">
+                        <label for="help">Help</label>
+                        <input type="radio" id="newpar" name="icon">
+                        <label for="newpar">New Paragraph</label>
+                        <input type="radio" id="par" name="icon">
+                        <label for="par">Paragraph</label>
+                        <input type="radio" id="insert" name="icon">
+                        <label for="insert">Insert</label>
+                </fieldset>
+                </p>
+                StateModel:
+                <fieldset>
+                        <input type="radio" id="marked" name="stateModel">
+                        <label for="marked">Marked</label>
+                        <input type="radio" id="review" name="stateModel">
+                        <label for="review">Review</label>
+                </fieldset>
+                </p>
+                </p>
+                State:
+                <fieldset>
+                        <input type="radio" id="_marked" name="state">
+                        <label for="_marked">Marked</label>
+                        <input type="radio" id="unmarked" name="state">
+                        <label for="unmarked">Unmarked</label>
+                        <input type="radio" id="accepted" name="state">
+                        <label for="accepted">Accepted</label>
+                        <input type="radio" id="rejected" name="state">
+                        <label for="rejected">Rejected</label>
+                        <input type="radio" id="cancelled" name="state">
+                        <label for="cancelled">Cancelled</label>
+                        <input type="radio" id="completed" name="state">
+                        <label for="completed">Completed</label>
+                        <input type="radio" id="none" name="state">
+                        <label for="none">None</label>
+                </fieldset>
+                </p>
+        </div>
+        <div class="buttonClass"><button id="addTextAnnotation" type="button">Create Text Annotation</button></div>
+        <hr>
+        <div> <button id="highlightAnnotColorPicker">Choose Color</button>
+                <p>
+                        Opacity:<input style="margin-left: 10px;" type="number" id="highlightAnnotOpacity" value="0.5">
+                </p>
+        </div>
+        <div class="buttonClass"><button id="addHighlightAnnotation" type="button">Create Highlight Annotation</button>
+        </div>
+        <div class="buttonClass"><button id="addHighlightAnnotationQuadPoint" type="button">Create Highlight Annotation
+                        QuadPoint</button></div>
+        <div class="buttonClass"><button id="addHighlightAnnotationQuadPointWithoutRect" type="button">Create Highlight
+                        Annotation QuadPoint without Rect Definition</button></div>
+        <div class="buttonClass"><button id="addUnderlineAnnotation" type="button">Create Underline Annotation</button>
+        </div>
+        <div class="buttonClass"><button id="addSquigglyAnnotation" type="button">Create Squiggly Annotation</button>
+        </div>
+        <div class="buttonClass"><button id="addStrikeOutAnnotation" type="button">Create StrikeOut Annotation</button>
+        </div>
+        <hr>
+        <p>
+                Text justification:
+        <fieldset>
+                <input type="radio" id="left" name="freetext_text_justification" checked>
+                <label for="left">Left</label>
+                <input type="radio" id="center" name="freetext_text_justification">
+                <label for="center">Center</label>
+                <input type="radio" id="right" name="freetext_text_justification">
+                <label for="right">Right</label>
+        </fieldset>
+        </p>
+        <p>
+                Freetext type:
+        <fieldset>
+                <input type="radio" id="freetext" name="freetext_type" checked>
+                <label for="freetext">Freetext</label>
+                <input type="radio" id="freetext_callout" name="freetext_type">
+                <label for="freetext_callout">FreeTextCallout</label>
+                <input type="radio" id="freetext_typewriter" name="freetext_type">
+                <label for="freetext_typewriter">FreeTextTypeWriter</label>
+        </fieldset>
+        </p>
+        Callout line ending:
+        <fieldset>
+                <input type="radio" id="square" name="freetext_callout_line_ending">
+                <label for="square">Square</label>
+                <input type="radio" id="circle" name="freetext_callout_line_ending">
+                <label for="circle">Circle</label>
+                <input type="radio" id="diamond" name="freetext_callout_line_ending">
+                <label for="diamond">Diamond</label>
+                <input type="radio" id="open_arrow" name="freetext_callout_line_ending">
+                <label for="open_arrow">OpenArrow</label>
+                <input type="radio" id="closed_arrow" name="freetext_callout_line_ending">
+                <label for="closed_arrow">ClosedArrow</label>
+                <input type="radio" id="none" name="freetext_callout_line_ending" checked>
+                <label for="none">None</label>
+                <input type="radio" id="butt" name="freetext_callout_line_ending">
+                <label for="butt">Butt</label>
+                <input type="radio" id="r_open_arrow" name="freetext_callout_line_ending">
+                <label for="r_open_arrow">ROpenArrow</label>
+                <input type="radio" id="r_closed_arrow" name="freetext_callout_line_ending">
+                <label for="r_closed_arrow">RClosedArrow</label>
+                <input type="radio" id="slash" name="freetext_callout_line_ending">
+                <label for="slash">Slash</label>
+        </fieldset>
+        </p>
+        <div class="buttonClass"><button id="addFreeTextAnnotation" type="button">Create FreeText Annotation</button>
+        </div>
+        <div class="buttonClass"><button id="addLineAnnotation" type="button">Create Line Annotation</button></div>
+        <hr>
+        <div> <button id="lineColorPicker">Choose Line Color</button><button id="fillColorPicker">Choose Fill
+                        Color</button></div>
+        <div class="buttonClass"><button id="addCircleAnnotation" type="button">Create Circle Annotation</button></div>
+        <div class="buttonClass"><button id="addSquareAnnotation" type="button">Create Square Annotation</button></div>
+        <div class="buttonClass"><button id="addPolygonAnnotation" type="button">Create Polygon Annotation</button>
+        </div>
+        <p>
+                Start line ending:
+        <fieldset>
+                <input type="radio" id="square" name="polyline_line_start">
+                <label for="square">Square</label>
+                <input type="radio" id="circle" name="polyline_line_start">
+                <label for="circle">Circle</label>
+                <input type="radio" id="diamond" name="polyline_line_start">
+                <label for="diamond">Diamond</label>
+                <input type="radio" id="open_arrow" name="polyline_line_start">
+                <label for="open_arrow">OpenArrow</label>
+                <input type="radio" id="closed_arrow" name="polyline_line_start">
+                <label for="closed_arrow">ClosedArrow</label>
+                <input type="radio" id="none" name="polyline_line_start" checked>
+                <label for="none">None</label>
+                <input type="radio" id="butt" name="polyline_line_start">
+                <label for="butt">Butt</label>
+                <input type="radio" id="r_open_arrow" name="polyline_line_start">
+                <label for="r_open_arrow">ROpenArrow</label>
+                <input type="radio" id="r_closed_arrow" name="polyline_line_start">
+                <label for="r_closed_arrow">RClosedArrow</label>
+                <input type="radio" id="slash" name="polyline_line_start">
+                <label for="slash">Slash</label>
+        </fieldset>
+        </p>
+        <p>
+                End line ending:
+        <fieldset>
+                <input type="radio" id="square" name="polyline_line_end">
+                <label for="square">Square</label>
+                <input type="radio" id="circle" name="polyline_line_end">
+                <label for="circle">Circle</label>
+                <input type="radio" id="diamond" name="polyline_line_end">
+                <label for="diamond">Diamond</label>
+                <input type="radio" id="open_arrow" name="polyline_line_end">
+                <label for="open_arrow">OpenArrow</label>
+                <input type="radio" id="closed_arrow" name="polyline_line_end">
+                <label for="closed_arrow">ClosedArrow</label>
+                <input type="radio" id="none" name="polyline_line_end" checked>
+                <label for="none">None</label>
+                <input type="radio" id="butt" name="polyline_line_end">
+                <label for="butt">Butt</label>
+                <input type="radio" id="r_open_arrow" name="polyline_line_end">
+                <label for="r_open_arrow">ROpenArrow</label>
+                <input type="radio" id="r_closed_arrow" name="polyline_line_end">
+                <label for="r_closed_arrow">RClosedArrow</label>
+                <input type="radio" id="slash" name="polyline_line_end">
+                <label for="slash">Slash</label>
+        </fieldset>
+        </p>
+        <div class="buttonClass"><button id="addPolyLineAnnotation" type="button">Create PolyLine Annotation</button>
+        </div>
+        <hr>
+        <div class="buttonClass"><button id="addInkAnnotation" type="button">Create Ink Annotation</button></div>
+        <div class="buttonClass"><button id="download" type="button">Download</button></div>
+        <div class="buttonClass"><button id="showAnnotations" type="button">Show Annotations</button></div>
+        <div id="toDelete"></div>
+        <div class="buttonClass"><button id="deleteAnnotation" type="button">Delete Annotation</button></div>
+        <script>
+
+                var textAnnotColor = { r: 0, g: 0, b: 0 }
+                var highlightAnnotColor = { r: 0, g: 0, b: 0 }
+                var lineColor = { r: 0, g: 0, b: 0 }
+                var fillColor = { r: 0, g: 0, b: 0 }
+
+                var textAnnotColorPicker = document.querySelector('#textAnnotColorPicker');
+                var _textAnnotColorPicker = new Picker(textAnnotColorPicker);
+
+                _textAnnotColorPicker.onChange = function (color) {
+                        textAnnotColorPicker.style.background = color.rgbaString;
+                        textAnnotColor = { r: color._rgba[0], g: color._rgba[1], b: color._rgba[2] }
+                };
+
+                var highlightAnnotColorPicker = document.querySelector('#highlightAnnotColorPicker');
+                var _highlightAnnotColorPicker = new Picker(highlightAnnotColorPicker);
+
+                _highlightAnnotColorPicker.onChange = function (color) {
+                        highlightAnnotColorPicker.style.background = color.rgbaString;
+                        highlightAnnotColor = { r: color._rgba[0], g: color._rgba[1], b: color._rgba[2] }
+                };
+
+
+                var lineColorPicker = document.querySelector('#lineColorPicker');
+                var _lineColorPicker = new Picker(lineColorPicker);
+
+                _lineColorPicker.onChange = function (color) {
+                        lineColorPicker.style.background = color.rgbaString;
+                        lineColor = { r: color._rgba[0], g: color._rgba[1], b: color._rgba[2] }
+                };
+
+                var fillColorPicker = document.querySelector('#fillColorPicker');
+                var _fillColorPicker = new Picker(fillColorPicker);
+
+                _fillColorPicker.onChange = function (color) {
+                        fillColorPicker.style.background = color.rgbaString;
+                        fillColor = { r: color._rgba[0], g: color._rgba[1], b: color._rgba[2] }
+                };
+
+                let pdfFactory = undefined
+
+                let fileLoad = function (filepath) {
+                        console.log("Load " + filepath)
+
+                        pdfAnnotate.AnnotationFactory.loadFile(filepath, "123", "123").then((factory) => {
+                                //pdfAnnotate.AnnotationFactory.loadFile(filepath).then((factory) => {
+                                pdfFactory = factory
+                                console.log(factory)
+                        })
+                }
+
+                document.querySelector('#deleteAnnotation').addEventListener('click', (evt) => {
+                        pdfFactory.getAnnotations().then((data) => {
+                                for (let annot of data[0]) {
+                                        var btn = document.createElement("BUTTON")
+                                        btn.addEventListener('click', (evt) => {
+                                                let id = annot.id
+                                                pdfFactory.deleteAnnotation(id)
+                                        })
+                                        var t = document.createTextNode(annot.id)
+                                        btn.appendChild(t);
+                                        document.querySelector('#toDelete').appendChild(btn)
+                                }
+                                console.log(data)
+                        })
+                })
+
+                function getRadioButtonIcon() {
+                        let radios = document.getElementsByName("icon")
+
+                        if (radios[0].checked) {
+                                return pdfAnnotate.AnnotationIcon.Comment
+                        } else if (radios[1].checked) {
+                                return pdfAnnotate.AnnotationIcon.Key
+                        } else if (radios[2].checked) {
+                                return pdfAnnotate.AnnotationIcon.Note
+                        } else if (radios[3].checked) {
+                                return pdfAnnotate.AnnotationIcon.Help
+                        } else if (radios[4].checked) {
+                                return pdfAnnotate.AnnotationIcon.NewParagraph
+                        } else if (radios[5].checked) {
+                                return pdfAnnotate.AnnotationIcon.Paragraph
+                        } else if (radios[6].checked) {
+                                return pdfAnnotate.AnnotationIcon.Insert
+                        }
+                }
+
+                function getStateModel() {
+                        let radios = document.getElementsByName("stateModel")
+                        if (radios[0].checked) {
+                                return pdfAnnotate.AnnotationStateModel.Marked
+                        } else if (radios[1].checked) {
+                                return pdfAnnotate.AnnotationStateModel.Review
+                        }
+
+                        return undefined
+                }
+
+                function getState() {
+                        let radios = document.getElementsByName("state")
+
+                        if (radios[0].checked) {
+                                return pdfAnnotate.AnnotationState.Marked
+                        } else if (radios[1].checked) {
+                                return pdfAnnotate.AnnotationState.Unmarked
+                        } else if (radios[2].checked) {
+                                return pdfAnnotate.AnnotationState.Accepted
+                        } else if (radios[3].checked) {
+                                return pdfAnnotate.AnnotationState.Rejected
+                        } else if (radios[4].checked) {
+                                return pdfAnnotate.AnnotationState.Cancelled
+                        } else if (radios[5].checked) {
+                                return pdfAnnotate.AnnotationState.Completed
+                        } else if (radios[6].checked) {
+                                return pdfAnnotate.AnnotationState.None
+                        }
+
+                        return undefined
+                }
+
+                document.querySelector('#addTextAnnotation').addEventListener('click', (evt) => {
+                        let val = {
+                                page: 0,
+                                rect: [50, 50, 80, 80],
+                                contents: "Test123",
+                                author: "John",
+                                color: textAnnotColor,
+                                open: document.getElementById("textAnnotOpen").checked,
+                                icon: getRadioButtonIcon(),
+                                opacity: document.getElementById("textAnnotOpacity").value,
+                                creationDate: new Date(),
+                                subject: "A subject",
+                                richtextString: "A very rich text string"
+                        }
+                        let state = getState()
+
+                        if (state) {
+                                val.state = state
+                        }
+
+                        let statemodel = getStateModel()
+
+                        if (statemodel) {
+                                val.stateModel = statemodel
+                        }
+                        pdfFactory.createTextAnnotation(val)
+                })
+
+                document.querySelector('#addHighlightAnnotation').addEventListener('click', (evt) => {
+                        pdfFactory.createHighlightAnnotation({
+                                page: 0,
+                                rect: [100, 100, 200, 200],
+                                contents: "Test123",
+                                author: "John",
+                                color: highlightAnnotColor,
+                                opacity: document.getElementById("highlightAnnotOpacity").value,
+                        })
+                })
+
+                document.querySelector('#addHighlightAnnotationQuadPoint').addEventListener('click', (evt) => {
+                        pdfFactory.createHighlightAnnotation({
+                                page: 0,
+                                rect: [100, 100, 200, 200],
+                                contents: "Test123",
+                                author: "John",
+                                color: highlightAnnotColor,
+                                quadPoints: [100, 130, 150, 130, 100, 100, 150, 100 /*rectangle one*/, 150, 180, 200, 180, 150, 150, 200, 150 /*rectangle two*/],
+                                opacity: document.getElementById("highlightAnnotOpacity").value,
+                        })
+                })
+
+                document.querySelector('#addHighlightAnnotationQuadPointWithoutRect').addEventListener('click', (evt) => {
+                        pdfFactory.createHighlightAnnotation({
+                                page: 0,
+                                rect: [],
+                                contents: "Test123",
+                                author: "John",
+                                color: highlightAnnotColor,
+                                quadPoints: [100, 130, 150, 130, 100, 100, 150, 100 /*rectangle one*/, 150, 180, 200, 180, 150, 150, 200, 150 /*rectangle two*/],
+                                opacity: document.getElementById("highlightAnnotOpacity").value,
+                        })
+                })
+
+                document.querySelector('#addUnderlineAnnotation').addEventListener('click', (evt) => {
+                        pdfFactory.createUnderlineAnnotation({
+                                page: 0,
+                                rect: [50, 50, 80, 80],
+                                contents: "Test123",
+                                author: "John",
+                                color: highlightAnnotColor,
+                                opacity: document.getElementById("highlightAnnotOpacity").value,
+                        })
+                })
+
+                document.querySelector('#addSquigglyAnnotation').addEventListener('click', (evt) => {
+                        pdfFactory.createSquigglyAnnotation({
+                                page: 0,
+                                rect: [100, 100, 200, 200],
+                                contents: "Test123",
+                                author: "John",
+                                color: highlightAnnotColor,
+                                opacity: document.getElementById("highlightAnnotOpacity").value,
+                        })
+                })
+
+                document.querySelector('#addStrikeOutAnnotation').addEventListener('click', (evt) => {
+                        pdfFactory.createStrikeOutAnnotation({
+                                page: 0,
+                                rect: [100, 100, 200, 200],
+                                contents: "Test123",
+                                author: "John",
+                                color: highlightAnnotColor,
+                                opacity: document.getElementById("highlightAnnotOpacity").value,
+                        })
+                })
+
+                document.querySelector('#addFreeTextAnnotation').addEventListener('click', (evt) => {
+                        let textJustification = pdfAnnotate.TextJustification.Left
+                        let radios = document.getElementsByName("freetext_text_justification")
+
+
+                        if (radios[0].checked) {
+                                textJustification = pdfAnnotate.TextJustification.Left
+                        } else if (radios[1].checked) {
+                                textJustification = pdfAnnotate.TextJustification.Centered
+                        } else if (radios[2].checked) {
+                                textJustification = pdfAnnotate.TextJustification.Right
+                        }
+
+                        let freeTextType = pdfAnnotate.FreeTextType.FreeText
+                        let calloutline = []
+
+                        radios = document.getElementsByName("freetext_type")
+
+                        if (radios[0].checked) {
+                                freeTextType = pdfAnnotate.FreeTextType.FreeText
+                        } else if (radios[1].checked) {
+                                freeTextType = pdfAnnotate.FreeTextType.FreeTextCallout
+                                calloutline = [20, 20, 40, 40]
+                        } else if (radios[2].checked) {
+                                freeTextType = pdfAnnotate.FreeTextType.FreeTextTypeWriter
+                        }
+
+                        let lineEndingStyle = pdfAnnotate.LineEndingStyle.None
+
+                        radios = document.getElementsByName("freetext_callout_line_ending")
+
+                        if (radios[0].checked) {
+                                lineEndingStyle = pdfAnnotate.LineEndingStyle.Square
+                        } else if (radios[1].checked) {
+                                lineEndingStyle = pdfAnnotate.LineEndingStyle.Circle
+                        } else if (radios[2].checked) {
+                                lineEndingStyle = pdfAnnotate.LineEndingStyle.Diamond
+                        } else if (radios[3].checked) {
+                                lineEndingStyle = pdfAnnotate.LineEndingStyle.OpenArrow
+                        } else if (radios[4].checked) {
+                                lineEndingStyle = pdfAnnotate.LineEndingStyle.ClosedArrow
+                        } else if (radios[5].checked) {
+                                lineEndingStyle = pdfAnnotate.LineEndingStyle.None
+                        } else if (radios[6].checked) {
+                                lineEndingStyle = pdfAnnotate.LineEndingStyle.Butt
+                        } else if (radios[7].checked) {
+                                lineEndingStyle = pdfAnnotate.LineEndingStyle.ROpenArrow
+                        } else if (radios[8].checked) {
+                                lineEndingStyle = pdfAnnotate.LineEndingStyle.RClosedArrow
+                        } else if (radios[9].checked) {
+                                lineEndingStyle = pdfAnnotate.LineEndingStyle.Slash
+                        }
+
+                        pdfFactory.createFreeTextAnnotation({
+                                page: 0,
+                                rect: [30, 30, 50, 50],
+                                contents: "Test123",
+                                author: "John",
+                                textJustification: textJustification,
+                                freeTextType: freeTextType,
+                                lineEndingStyle: lineEndingStyle,
+                                calloutLine: calloutline
+                        })
+                })
+
+                document.querySelector('#addLineAnnotation').addEventListener('click', (evt) => {
+                        pdfFactory.createLineAnnotation(0, [70, 70, 90, 90], "Test123", "John")
+                })
+
+                document.querySelector('#addCircleAnnotation').addEventListener('click', (evt) => {
+                        pdfFactory.createCircleAnnotation({
+                                page: 0,
+                                rect: [60, 60, 80, 80],
+                                contents: "Test123",
+                                author: "John",
+                                color: lineColor,
+                                fill: fillColor
+                        })
+                })
+
+                document.querySelector('#addSquareAnnotation').addEventListener('click', (evt) => {
+                        pdfFactory.createSquareAnnotation({
+                                page: 0,
+                                //rect: [478.55, 207.57, 558.55, 232.57],
+                                rect: [178.55, 107.57, 158.55, 132.57],
+                                contents: "",
+                                author: "",
+                                color: { r: 10, g: 50, b: 30 },
+                                fill: { r: 150, g: 200, b: 20 }
+                        })
+                })
+
+                document.querySelector('#addPolygonAnnotation').addEventListener('click', (evt) => {
+                        pdfFactory.createPolygonAnnotation({
+                                page: 0,
+                                rect: [80, 80, 120, 120],
+                                contents: "Test123",
+                                author: "John",
+                                vertices: [80, 80, 100, 100, 110, 80, 120, 120],
+                                color: lineColor,
+                                fill: fillColor
+                        })
+                })
+
+                document.querySelector('#addPolyLineAnnotation').addEventListener('click', (evt) => {
+                        let lineStart = pdfAnnotate.LineEndingStyle.None
+                        let lineEnd = pdfAnnotate.LineEndingStyle.None
+
+                        radios = document.getElementsByName("polyline_line_start")
+
+                        if (radios[0].checked) {
+                                lineStart = pdfAnnotate.LineEndingStyle.Square
+                        } else if (radios[1].checked) {
+                                lineStart = pdfAnnotate.LineEndingStyle.Circle
+                        } else if (radios[2].checked) {
+                                lineStart = pdfAnnotate.LineEndingStyle.Diamond
+                        } else if (radios[3].checked) {
+                                lineStart = pdfAnnotate.LineEndingStyle.OpenArrow
+                        } else if (radios[4].checked) {
+                                lineStart = pdfAnnotate.LineEndingStyle.ClosedArrow
+                        } else if (radios[5].checked) {
+                                lineStart = pdfAnnotate.LineEndingStyle.None
+                        } else if (radios[6].checked) {
+                                lineStart = pdfAnnotate.LineEndingStyle.Butt
+                        } else if (radios[7].checked) {
+                                lineStart = pdfAnnotate.LineEndingStyle.ROpenArrow
+                        } else if (radios[8].checked) {
+                                lineStart = pdfAnnotate.LineEndingStyle.RClosedArrow
+                        } else if (radios[9].checked) {
+                                lineStart = pdfAnnotate.LineEndingStyle.Slash
+                        }
+
+                        radios = document.getElementsByName("polyline_line_end")
+
+                        if (radios[0].checked) {
+                                lineEnd = pdfAnnotate.LineEndingStyle.Square
+                        } else if (radios[1].checked) {
+                                lineEnd = pdfAnnotate.LineEndingStyle.Circle
+                        } else if (radios[2].checked) {
+                                lineEnd = pdfAnnotate.LineEndingStyle.Diamond
+                        } else if (radios[3].checked) {
+                                lineEnd = pdfAnnotate.LineEndingStyle.OpenArrow
+                        } else if (radios[4].checked) {
+                                lineEnd = pdfAnnotate.LineEndingStyle.ClosedArrow
+                        } else if (radios[5].checked) {
+                                lineEnd = pdfAnnotate.LineEndingStyle.None
+                        } else if (radios[6].checked) {
+                                lineEnd = pdfAnnotate.LineEndingStyle.Butt
+                        } else if (radios[7].checked) {
+                                lineEnd = pdfAnnotate.LineEndingStyle.ROpenArrow
+                        } else if (radios[8].checked) {
+                                lineEnd = pdfAnnotate.LineEndingStyle.RClosedArrow
+                        } else if (radios[9].checked) {
+                                lineEnd = pdfAnnotate.LineEndingStyle.Slash
+                        }
+                        pdfFactory.createPolyLineAnnotation({
+                                page: 0,
+                                rect: [80, 80, 120, 120],
+                                contents: "Test123",
+                                author: "John",
+                                vertices: [80, 80, 100, 100, 110, 80, 120, 120],
+                                color: lineColor,
+                                fill: fillColor,
+                                lineEndingStyles: [lineStart, lineEnd]
+                        })
+                })
+
+                document.querySelector('#addInkAnnotation').addEventListener('click', (evt) => {
+                        pdfFactory.createInkAnnotation({
+                                page: 0,
+                                rect: [0, 0, 200, 200],
+                                contents: "Test123",
+                                author: "John",
+                                inkList: [[0, 0, 10, 10, 20, 0, 30, 10]]
+                        })
+                })
+
+                document.querySelector('#download').addEventListener('click', (evt) => {
+                        pdfFactory.download()
+                })
+
+                document.querySelector('#showAnnotations').addEventListener('click', (evt) => {
+                        pdfFactory.getAnnotations().then((data) => {
+                                console.log(data)
+                                document.querySelector('#app').innerHTML = data[0].map(d => d.type)
+                                //data[0][17].appearanceStream.lookupNContentStream()
+                                let fta = pdfFactory.createUnderlineAnnotation({
+                                        page: 0,
+                                        rect: [50, 50, 80, 80],
+                                        contents: "Test123",
+                                        author: "John",
+                                        color: highlightAnnotColor,
+                                        opacity: document.getElementById("highlightAnnotOpacity").value,
+                                })
+                                //                       let fta = pdfFactory.createFreeTextAnnotation({
+                                //                                                       page: 0,
+                                //                                                       rect: [30, 30, 50, 50],
+                                //                                                       contents: "Test123",
+                                //                                                       author: "John"
+                                //                                               })
+                                fta.createDefaultAppearanceStream()
+                        })
+                })
+
+                document.querySelector('#reloadFile').addEventListener('click', (evt) => {
+                        console.log("reload file")
+                        fileLoad(document.getElementById("inputFileName").value)
+                })
+
+                window.onload = function () {
+                        fileLoad(document.getElementById("inputFileName").value)
+                }
+        </script>
+</body>
+
+</html>
