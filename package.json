@@ -1,6 +1,6 @@
 {
-        "name": "annotpdf",
-        "version": "1.0.15",
+        "name": "annotpdfjs",
+        "version": "1.0.0",
         "description": "Javascript library for creating annotations in PDF documents",
         "main": "lib/index.js",
         "types": "lib/index.d.ts",
@@ -19,7 +19,7 @@
                 "annotation",
                 "review"
         ],
-        "author": "Thomas Osterland",
+        "author": "Daksh Lohar",
         "license": "MIT",
         "devDependencies": {
                 "@types/jest": "^23.3.14",
@@ -34,12 +34,12 @@
         },
         "repository": {
                 "type": "git",
-                "url": "https://github.com/highkite/pdfAnnotate.git"
+                "url": "https://github.com/dakshlohar1/annot-pdf-js.git"
         },
         "bugs": {
-                "url": "https://github.com/highkite/pdfAnnotate.git/issues"
+                "url": "https://github.com/dakshlohar1/annot-pdf-js.git/issues"
         },
-        "homepage": "https://github.com/highkite/pdfAnnotate.git",
+        "homepage": "https://github.com/dakshlohar1/annot-pdf-js.git",
         "dependencies": {
                 "@types/crypto-js": "^4.0.1",
                 "@types/pako": "^1.0.1",
