@@ -48,13 +48,15 @@ export class LineAnnotationObj
       ret.push(WriterUtil.SPACE);
     }
 
-    if (this.lineEndingStyles && this.lineEndingStyles.length >= 2) {
+    if (this.lineEndingStyles && this.lineEndingStyles.length >= 1) {
       ret = ret.concat(WriterUtil.LINE_ENDING);
       ret.push(WriterUtil.ARRAY_START);
       ret.push(WriterUtil.SPACE);
       ret = ret.concat(this.convertLineEndingStyle(this.lineEndingStyles[0]));
-      ret.push(WriterUtil.SPACE);
-      ret = ret.concat(this.convertLineEndingStyle(this.lineEndingStyles[1]));
+      if (this.lineEndingStyles.length === 2) {
+        ret.push(WriterUtil.SPACE);
+        ret = ret.concat(this.convertLineEndingStyle(this.lineEndingStyles[1]));
+      }
       ret.push(WriterUtil.SPACE);
       ret.push(WriterUtil.ARRAY_END);
       ret.push(WriterUtil.SPACE);
