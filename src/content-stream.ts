@@ -210,28 +210,31 @@ export class GraphicsObject extends Operator {
     y_1: number,
     x_2: number,
     y_2: number,
-    linewidth: number = 2
+    linewidth: number = 2,
+    shouldFill: boolean = true
   ): GraphicsObject {
-    x_1 += linewidth;
-    y_1 += linewidth;
-    x_2 -= linewidth;
-    y_2 -= linewidth;
-    let rect_width: number = Math.abs(x_2 - x_1);
-    let rect_height: number = Math.abs(y_2 - y_1);
+    x_1 -= linewidth;
+    y_1 -= linewidth;
+    x_2 += linewidth;
+    y_2 += linewidth;
+
+    let rect_width = Math.abs(x_2 - x_1);
+    let rect_height = Math.abs(y_2 - y_1);
+
     this.addOperator("w", [linewidth]);
     this.addOperator("m", [x_1 + rect_width / 2, y_1]);
     this.addOperator("c", [
       x_1 + rect_width / 2,
       y_1,
-      x_2,
+      x_1,
       y_1,
-      x_2,
-      y_1 + rect_height / 2,
+      x_1,
+      y_1 - rect_height / 2,
     ]);
     this.addOperator("c", [
-      x_2,
-      y_1 + rect_height / 2,
-      x_2,
+      x_1,
+      y_1 - rect_height / 2,
+      x_1,
       y_2,
       x_1 + rect_width / 2,
       y_2,
@@ -239,20 +242,20 @@ export class GraphicsObject extends Operator {
     this.addOperator("c", [
       x_1 + rect_width / 2,
       y_2,
-      x_1,
+      x_2,
       y_2,
-      x_1,
-      y_1 + rect_height / 2,
+      x_2,
+      y_2 + rect_height / 2,
     ]);
     this.addOperator("c", [
-      x_1,
-      y_1 + rect_height / 2,
-      x_1,
+      x_2,
+      y_2 + rect_height / 2,
+      x_2,
       y_1,
-      x_1 + rect_width / 2,
+      x_2 - rect_width / 2,
       y_1,
     ]);
-    this.addOperator("B");
+    this.addOperator(shouldFill ? "f" : "S");
     return this;
   }
 
