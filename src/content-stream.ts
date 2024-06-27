@@ -127,7 +127,8 @@ export class GraphicsObject extends Operator {
     x_2: number,
     y_2: number,
     cornerRadius: number | undefined = undefined,
-    linewidth: number = 2
+    linewidth: number = 2,
+    shouldFill: boolean = true
   ): GraphicsObject {
     this.addOperator("w", [linewidth]);
 
@@ -158,7 +159,7 @@ export class GraphicsObject extends Operator {
       this.addOperator("l", [x_1, y_2]);
       this.addOperator("l", [x_1, y_1]);
     }
-    this.addOperator("B");
+    this.addOperator(shouldFill ? "B" : "S");
     return this;
   }
 
@@ -206,57 +207,53 @@ export class GraphicsObject extends Operator {
   }
 
   drawFillCircle(
-    x_1: number,
-    y_1: number,
-    x_2: number,
-    y_2: number,
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
     linewidth: number = 2,
     shouldFill: boolean = true
   ): GraphicsObject {
-    x_1 -= linewidth;
-    y_1 -= linewidth;
-    x_2 += linewidth;
-    y_2 += linewidth;
-
-    let rect_width = Math.abs(x_2 - x_1);
-    let rect_height = Math.abs(y_2 - y_1);
+    x1 += linewidth / 2;
+    y1 -= linewidth / 2;
+    x2 -= linewidth / 2;
+    y2 += linewidth / 2;
+    const KAPPA = 0.5522847498307936;
+    const r1 = Math.abs(x1 - x2) / 2;
+    const r2 = Math.abs(y1 - y2) / 2;
+    let x = (x1 + x2) / 2;
+    let y = (y1 + y2) / 2;
 
     this.addOperator("w", [linewidth]);
-    this.addOperator("m", [x_1 + rect_width / 2, y_1]);
-    this.addOperator("c", [
-      x_1 + rect_width / 2,
-      y_1,
-      x_1,
-      y_1,
-      x_1,
-      y_1 - rect_height / 2,
-    ]);
-    this.addOperator("c", [
-      x_1,
-      y_1 - rect_height / 2,
-      x_1,
-      y_2,
-      x_1 + rect_width / 2,
-      y_2,
-    ]);
-    this.addOperator("c", [
-      x_1 + rect_width / 2,
-      y_2,
-      x_2,
-      y_2,
-      x_2,
-      y_2 + rect_height / 2,
-    ]);
-    this.addOperator("c", [
-      x_2,
-      y_2 + rect_height / 2,
-      x_2,
-      y_1,
-      x_2 - rect_width / 2,
-      y_1,
-    ]);
-    this.addOperator(shouldFill ? "f" : "S");
+
+    x -= r1;
+    y -= r2;
+    const ox = r1 * KAPPA;
+    const oy = r2 * KAPPA;
+    const xe = x + r1 * 2;
+    const ye = y + r2 * 2;
+    const xm = x + r1;
+    const ym = y + r2;
+
+    this.moveTo(x, ym);
+    this.bezierCurveTo(x, ym - oy, xm - ox, y, xm, y);
+    this.bezierCurveTo(xm + ox, y, xe, ym - oy, xe, ym);
+    this.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
+    this.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
+    this.addOperator("h");
+    this.addOperator("S");
     return this;
+  }
+
+  bezierCurveTo(
+    cp1x: number,
+    cp1y: number,
+    cp2x: number,
+    cp2y: number,
+    x: number,
+    y: number
+  ) {
+    this.addOperator("c", [cp1x, cp1y, cp2x, cp2y, x, y]);
   }
 
   fillCircle(
@@ -343,7 +340,11 @@ export class GraphicsObject extends Operator {
     return this;
   }
 
-  drawFillPolygon(points: number[], linewidth: number = 2): GraphicsObject {
+  drawFillPolygon(
+    points: number[],
+    linewidth: number = 2,
+    shouldFill: boolean = true
+  ): GraphicsObject {
     if (points.length <= 2) return this;
 
     if (points.length % 2 !== 0) throw Error("Number of points must be even");
@@ -354,7 +355,7 @@ export class GraphicsObject extends Operator {
     for (let i = 2; i < points.length; i += 2) {
       this.addOperator("l", [points[i], points[i + 1]]);
     }
-    this.addOperator("B");
+    this.addOperator(shouldFill ? "B" : "s");
 
     return this;
   }
@@ -370,10 +371,7 @@ export class GraphicsObject extends Operator {
     for (let i = 2; i < points.length; i += 2) {
       this.addOperator("l", [points[i], points[i + 1]]);
     }
-    // set line ending style
-    this.addOperator("J", [1]);
     this.addOperator("S");
-
     return this;
   }
 

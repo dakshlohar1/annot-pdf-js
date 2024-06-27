@@ -20,6 +20,7 @@ import {
 import {
   PolygonAnnotationObj,
   PolyLineAnnotationObj,
+  TriangleAnnotationObj,
 } from "./annotations/polygon_polyline_annotation";
 import { InkAnnotationObj } from "./annotations/ink_annotation";
 import { Util } from "./util";
@@ -171,13 +172,15 @@ export class AnnotationFactory {
 
             reader.readAsArrayBuffer(data);
           });
-      } else if (typeof process === "object") {
-        // node environment
-        let fs = require("fs");
-        let data = fs.readFileSync(path);
+      }
+      // else if (typeof process === "object") {
+      //   // node environment
+      //   let fs = require("fs");
+      //   let data = fs.readFileSync(path);
 
-        resolve(new AnnotationFactory(data, userPassword, ownerPassword));
-      } else {
+      //   resolve(new AnnotationFactory(data, userPassword, ownerPassword));
+      // }
+      else {
         throw Error("Unsupported environment");
       }
     });
@@ -284,6 +287,31 @@ export class AnnotationFactory {
     let params = ParameterParser.parseParameters(values);
 
     let annot: TextAnnotationObj = new TextAnnotationObj();
+    annot = (<any>Object).assign(annot, this.createBaseAnnotation(params.page));
+    annot = (<any>Object).assign(annot, params);
+
+    annot.validate();
+
+    this.annotations.push(annot);
+
+    return annot;
+  }
+
+  /**
+   * Creates a triangle annotation with the specified parameters.
+   * @param page: The page number of the PDF document page, where the annotation must be attached.
+   * @param rect: The position of the annotation on the page.
+   * @param contents: The content of the annotation.
+   * @param author: The author of the annotation.
+   * @param color: The color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1.
+   * @param fill: The filling color of the annotation in rgb. Can be of domain 0 - 255 or 0 - 1.
+   * @param opacity: The opacity of the annotation. Can be a value between 0 and 1.
+   * @returns The created triangle annotation object.
+   */
+  createTriangleAnnotation(...values: any[]): TriangleAnnotationObj {
+    let params = ParameterParser.parseParameters(values);
+
+    let annot: TriangleAnnotationObj = new TriangleAnnotationObj();
     annot = (<any>Object).assign(annot, this.createBaseAnnotation(params.page));
     annot = (<any>Object).assign(annot, params);
 
@@ -699,16 +727,18 @@ export class AnnotationFactory {
     if (typeof window !== "undefined") {
       // browser environment
       this.download(fileName);
-    } else if (typeof process === "object") {
-      // node environment
-      const fs = require("fs");
-      let data = this.write();
-      fs.writeFile(fileName, Buffer.from(new Uint8Array(data)), (err: any) => {
-        if (err) {
-          throw Error(err);
-        }
-      });
-    } else {
+    }
+    // else if (typeof process === "object") {
+    //   // node environment
+    //   const fs = require("fs");
+    //   let data = this.write();
+    //   fs.writeFile(fileName, Buffer.from(new Uint8Array(data)), (err: any) => {
+    //     if (err) {
+    //       throw Error(err);
+    //     }
+    //   });
+    // }
+    else {
       throw Error("Unsupported environment");
     }
   }
