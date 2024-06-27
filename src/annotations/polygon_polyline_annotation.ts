@@ -18,6 +18,7 @@ import {
 } from "../appearance-stream";
 import { Resource } from "../resources";
 import { ContentStream, GraphicsObject } from "../content-stream";
+import { Util } from "../util";
 
 export enum PolygonPolyLineIntent {
   PolygonCloud,
@@ -259,6 +260,135 @@ export class PolygonAnnotationObj
       obj: xobj,
       func: (ob: any, cryptoInterface: CryptoInterface) =>
         ob.writeXObject(cryptoInterface),
+    });
+  }
+}
+
+export interface TriangleAnnotation
+  extends Omit<PolygonPolyLineAnnotation, "vertices"> {
+  borderEffect?: any;
+}
+
+export class TriangleAnnotationObj
+  extends MarkupAnnotationObj
+  implements TriangleAnnotation
+{
+  fill: Color | undefined;
+
+  constructor() {
+    super();
+    this.type = "/Polygon";
+    this.type_encoded = [47, 80, 111, 108, 121, 103, 111, 110]; // = '/Polygon
+  }
+
+  public writeAnnotationObject(cryptoInterface: CryptoInterface): number[] {
+    let ret: number[] = super.writeAnnotationObject(cryptoInterface);
+
+    ret = ret.concat(WriterUtil.SUBJ);
+    ret = ret.concat(Util.LITERAL_STRING_START);
+    ret = ret.concat([84, 114, 105, 97, 110, 103, 108, 101]); // Triangle
+    ret = ret.concat(Util.LITERAL_STRING_END);
+
+    if (this.fill) {
+      let fill: Color = this.fill;
+      if (fill.r > 1) fill.r /= 255;
+      if (fill.g > 1) fill.g /= 255;
+      if (fill.b > 1) fill.b /= 255;
+
+      ret.push(WriterUtil.SPACE);
+      ret = ret.concat(WriterUtil.FILL);
+      ret.push(WriterUtil.SPACE);
+      ret = ret.concat(WriterUtil.writeNumberArray([fill.r, fill.g, fill.b]));
+      ret.push(WriterUtil.SPACE);
+    }
+
+    // rect consists of [x1, y1, x2, y2]
+    const vertices: number[] = [
+      this.rect[0], //x1
+      this.rect[3], //y2
+      (this.rect[0] + this.rect[2]) / 2, //x1 + x2 / 2
+      this.rect[1], //y1
+      this.rect[2], //x2
+      this.rect[3], //y2
+    ];
+
+    ret = ret.concat(WriterUtil.VERTICES);
+    ret.push(WriterUtil.SPACE);
+    ret = ret.concat(WriterUtil.writeNumberArray(vertices));
+    ret.push(WriterUtil.SPACE);
+
+    return ret;
+  }
+
+  public validate(enact: boolean = true): ErrorList {
+    let errorList: ErrorList = super.validate(false);
+
+    if (this.fill) {
+      errorList = errorList.concat(this.checkColor(this.fill));
+    }
+
+    if (this.rect.length !== 4) {
+      errorList.push(new InvalidVerticesError("Invalid rectangle"));
+    }
+
+    if (enact) {
+      for (let error of errorList) {
+        throw error;
+      }
+    }
+
+    return errorList;
+  }
+
+  public createDefaultAppearanceStream() {
+    this.appearanceStream = new AppStream(this);
+    this.appearanceStream.new_object = true;
+    let xobj = new XObjectObj();
+    xobj.object_id = this.factory.parser.getFreeObjectId();
+    xobj.new_object = true;
+    xobj.bBox = this.rect;
+    xobj.matrix = [1, 0, 0, 1, -this.rect[0], -this.rect[1]];
+    let cs = new ContentStream();
+    xobj.contentStream = cs;
+    let cmo = cs.addMarkedContentObject(["/Tx"]);
+    let go = cmo.addGraphicObject();
+
+    if (this.opacity !== 1) {
+      go.addOperator("gs", ["/GParameters"]);
+
+      let gsp = new GraphicsStateParameter(
+        this.factory.parser.getFreeObjectId()
+      );
+      gsp.CA = gsp.ca = this.opacity;
+      this.additional_objects_to_write.push({
+        obj: gsp,
+        func: (ob: any) => ob.writeGStateParameter(),
+      });
+      let res = new Resource();
+      res.addGStateDef({ name: "/GParameters", refPtr: gsp.object_id });
+      xobj.resources = res;
+    }
+
+    go.setLineColor(this.color)
+      .setFillColor(this.fill)
+      .drawFillPolygon(
+        [
+          this.rect[0], //x1
+          this.rect[3], //y2
+          (this.rect[0] + this.rect[2]) / 2, //x1 + x2 / 2
+          this.rect[1], //y1
+          this.rect[2], //x2
+          this.rect[3], //y2
+        ],
+        this.border?.border_width,
+        !!this?.fill
+      );
+
+    this.appearanceStream.N = xobj;
+    this.additional_objects_to_write.push({
+      obj: xobj,
+      func: (ob: any, cryptoInterface: CryptoInterface) =>
+        ob.writeXObject(cryptoInterface, false),
     });
   }
 }
