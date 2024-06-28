@@ -246,8 +246,7 @@ export class GraphicsObject extends Operator {
     this.bezierCurveTo(xm + ox, y, xe, ym - oy, xe, ym);
     this.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
     this.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
-    this.addOperator("h");
-    this.addOperator("S");
+    this.addOperator(shouldFill ? "B" : "s");
     return this;
   }
 
