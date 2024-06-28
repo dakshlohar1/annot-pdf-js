@@ -130,6 +130,11 @@ export class GraphicsObject extends Operator {
     linewidth: number = 2,
     shouldFill: boolean = true
   ): GraphicsObject {
+    x_1 += linewidth / 2;
+    y_1 -= linewidth / 2;
+    x_2 -= linewidth / 2;
+    y_2 += linewidth / 2;
+
     this.addOperator("w", [linewidth]);
 
     if (
@@ -153,11 +158,12 @@ export class GraphicsObject extends Operator {
       this.addOperator("l", [x_1 + cornerRadius, y_1]);
       this.addOperator("c", [x_1, y_1, x_1, y_1, x_1, y_1 + cornerRadius]);
     } else {
-      this.addOperator("m", [x_1, y_1]);
-      this.addOperator("l", [x_2, y_1]);
-      this.addOperator("l", [x_2, y_2]);
-      this.addOperator("l", [x_1, y_2]);
-      this.addOperator("l", [x_1, y_1]);
+      this.addOperator("re", [
+        x_1,
+        y_2,
+        Math.abs(x_2 - x_1),
+        Math.abs(y_2 - y_1),
+      ]);
     }
     this.addOperator(shouldFill ? "B" : "S");
     return this;
