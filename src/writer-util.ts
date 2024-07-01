@@ -367,6 +367,13 @@ export class WriterUtil {
   }
 
   /**
+   * Writes a javascript number to a PDF number
+   * */
+  public static writeNumber(number: number): number[] {
+    return Util.convertNumberToCharArray(number);
+  }
+
+  /**
    * Replaces the /Annots field in an page object
    *
    * ptr : Pointer to the page object
