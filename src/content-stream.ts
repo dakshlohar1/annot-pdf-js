@@ -430,6 +430,16 @@ export class GraphicsObject extends Operator {
     this.addOperator("rg", [color.r, color.g, color.b]);
     return this;
   }
+
+  setMiterLimit(limit: number): GraphicsObject {
+    this.addOperator("M", [limit]);
+    return this;
+  }
+
+  setLineJoin(join: string): GraphicsObject {
+    this.addOperator("j", [join]);
+    return this;
+  }
 }
 
 export class TextObject extends Operator {
