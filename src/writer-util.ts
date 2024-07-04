@@ -8,6 +8,7 @@ export class WriterUtil {
   public static readonly q: number = 113;
   public static readonly Q: number = 81;
 
+  public static readonly LINE_JOIN = 106;
   public static readonly SLASH: number = 47; // = '/'
   public static readonly BT: number[] = [66, 84]; // = 'BT'
   public static readonly ET: number[] = [69, 84]; // = 'ET'

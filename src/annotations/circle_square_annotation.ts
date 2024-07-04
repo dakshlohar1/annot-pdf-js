@@ -48,12 +48,16 @@ export class CircleSquareAnnotationObj
       ret.push(WriterUtil.SPACE);
     }
 
-    if (this.differenceRectangle && this.differenceRectangle.length > 0) {
-      ret = ret.concat(WriterUtil.DIFFERENCE_RECTANGLE);
-      ret.push(WriterUtil.SPACE);
-      ret = ret.concat(WriterUtil.writeNumberArray(this.differenceRectangle));
-      ret.push(WriterUtil.SPACE);
-    }
+    ret = ret.concat(WriterUtil.DIFFERENCE_RECTANGLE);
+    ret.push(WriterUtil.SPACE);
+    ret = ret.concat(
+      WriterUtil.writeNumberArray(
+        this.differenceRectangle.length
+          ? this.differenceRectangle
+          : [0, 0, 0, 0]
+      )
+    );
+    ret.push(WriterUtil.SPACE);
 
     return ret;
   }
@@ -206,7 +210,15 @@ export class SquareAnnotationObj extends CircleSquareAnnotationObj {
 
     go.setLineColor(this.color)
       .setFillColor(this.fill)
-      .drawFillRect(this.rect[0], this.rect[1], this.rect[2], this.rect[3]);
+      .drawFillRect(
+        this.rect[0],
+        this.rect[1],
+        this.rect[2],
+        this.rect[3],
+        undefined,
+        this.border?.border_width,
+        !!this?.fill
+      );
 
     this.appearanceStream.N = xobj;
     this.additional_objects_to_write.push({
