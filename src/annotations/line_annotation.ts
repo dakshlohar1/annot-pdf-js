@@ -125,13 +125,68 @@ export class LineAnnotationObj
     }
     go.setLineColor(this.color)
       .setFillColor(this.color)
-      .drawLine(this.points[0], this.points[1], this.points[2], this.points[3]);
+      .drawLine(
+        this.points[0],
+        this.points[1],
+        this.points[2],
+        this.points[3],
+        this.border?.border_width
+      );
+
+    this.lineEndingStyles?.forEach((les, index) => {
+      if (les === LineEndingStyle.None) return;
+      if (les === LineEndingStyle.OpenArrow) {
+        let x1 = this.points[2];
+        let y1 = this.points[3];
+        let x2 = this.points[0];
+        let y2 = this.points[1];
+
+        if (index === 1) {
+          x1 = this.points[0];
+          y1 = this.points[1];
+          x2 = this.points[2];
+          y2 = this.points[3];
+        }
+        const angle = Math.atan2(y2 - y1, x2 - x1);
+        const headLength = 18;
+        const headAngle = (30 * Math.PI) / 180;
+        const DEFAULT_STROKE_WIDTH = 2;
+        // NOTE: - Divide by DEFAULT_STROKE_WIDTH which is 2
+        // to make the arrow head length proportional to the stroke width
+        const x3 =
+          x2 -
+          (headLength *
+            Math.cos(angle - headAngle) *
+            (this.border?.border_width || 1)) /
+            DEFAULT_STROKE_WIDTH;
+        const y3 =
+          y2 -
+          (headLength *
+            Math.sin(angle - headAngle) *
+            (this.border?.border_width || 1)) /
+            DEFAULT_STROKE_WIDTH;
+        const x4 =
+          x2 -
+          (headLength *
+            Math.cos(angle + headAngle) *
+            (this.border?.border_width || 1)) /
+            DEFAULT_STROKE_WIDTH;
+        const y4 =
+          y2 -
+          (headLength *
+            Math.sin(angle + headAngle) *
+            (this.border?.border_width || 1)) /
+            DEFAULT_STROKE_WIDTH;
+        go.drawLine(x2, y2, x3, y3, this.border?.border_width);
+        go.drawLine(x2, y2, x4, y4, this.border?.border_width);
+      }
+    });
 
     this.appearanceStream.N = xobj;
     this.additional_objects_to_write.push({
       obj: xobj,
       func: (ob: any, cryptoInterface: CryptoInterface) =>
-        ob.writeXObject(cryptoInterface),
+        ob.writeXObject(cryptoInterface, false),
     });
   }
 }
