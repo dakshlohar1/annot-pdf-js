@@ -13,12 +13,14 @@ import {
 } from "../appearance-stream";
 import { Resource } from "../resources";
 import { ContentStream, GraphicsObject } from "../content-stream";
+import { Util } from "../util";
 
 export interface CircleSquareAnnotation extends MarkupAnnotation {
   borderStyle?: any; // /BS
   fill?: Color; // /IC
   borderEffect?: any; // /BE
   differenceRectangle?: number[]; // /RD
+  angle?: number;
 }
 
 export class CircleSquareAnnotationObj
@@ -185,7 +187,13 @@ export class SquareAnnotationObj extends CircleSquareAnnotationObj {
     xobj.object_id = this.factory.parser.getFreeObjectId();
     xobj.new_object = true;
     xobj.bBox = this.rect;
-    xobj.matrix = [1, 0, 0, 1, -this.rect[0], -this.rect[1]];
+    if (this.angle) {
+      xobj.matrix = Util.rotate(this.angle, [1, 0, 0, 1, 0, 0], {
+        origin: [this.rect[0], this.rect[1]],
+      });
+    } else {
+      xobj.matrix = [1, 0, 0, 1, -this.rect[0], -this.rect[1]];
+    }
     let cs = new ContentStream();
     xobj.contentStream = cs;
     let cmo = cs.addMarkedContentObject(["/Tx"]);
@@ -224,7 +232,7 @@ export class SquareAnnotationObj extends CircleSquareAnnotationObj {
     this.additional_objects_to_write.push({
       obj: xobj,
       func: (ob: any, cryptoInterface: CryptoInterface) =>
-        ob.writeXObject(cryptoInterface),
+        ob.writeXObject(cryptoInterface, false),
     });
   }
 }

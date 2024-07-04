@@ -274,6 +274,7 @@ export class TriangleAnnotationObj
   implements TriangleAnnotation
 {
   fill: Color | undefined;
+  points: number[] = [];
 
   constructor() {
     super();
@@ -305,19 +306,19 @@ export class TriangleAnnotationObj
     ret.push(WriterUtil.SPACE);
     ret = ret.concat(WriterUtil.LINE_JOIN);
     ret.push(WriterUtil.SPACE);
-    ret = ret.concat(WriterUtil.writeNumberArray([0]));
+    ret = ret.concat(WriterUtil.writeNumber(0));
     ret.push(WriterUtil.SPACE);
 
     // rect consists of [x1, y1, x2, y2]
     const vertices: number[] = [
-      this.rect[0], //x1
-      this.rect[3], //y2
-      (this.rect[0] + this.rect[2]) / 2, //x1 + x2 / 2
-      this.rect[1], //y1
-      this.rect[2], //x2
-      this.rect[3], //y2
-      this.rect[0], //x1
-      this.rect[3], //y2
+      this.points[0], //x1
+      this.points[3], //y2
+      (this.points[0] + this.points[2]) / 2, //x1 + x2 / 2
+      this.points[1], //y1
+      this.points[2], //x2
+      this.points[3], //y2
+      this.points[0], //x1
+      this.points[3], //y2
     ];
 
     ret = ret.concat(WriterUtil.VERTICES);
@@ -354,14 +355,8 @@ export class TriangleAnnotationObj
     let xobj = new XObjectObj();
     xobj.object_id = this.factory.parser.getFreeObjectId();
     xobj.new_object = true;
-    const adjustedRect = [
-      this.rect[0] - (this.border?.border_width || 0),
-      this.rect[1] + (this.border?.border_width || 0),
-      this.rect[2] - (this.border?.border_width || 0),
-      this.rect[3] + (this.border?.border_width || 0),
-    ];
     xobj.bBox = this.rect;
-    xobj.matrix = [1, 0, 0, 1, -adjustedRect[0], -adjustedRect[1]];
+    xobj.matrix = [1, 0, 0, 1, -this.rect[0], -this.rect[1]];
     let cs = new ContentStream();
     xobj.contentStream = cs;
     let cmo = cs.addMarkedContentObject(["/Tx"]);
@@ -385,16 +380,17 @@ export class TriangleAnnotationObj
 
     go.setLineColor(this.color)
       .setFillColor(this.fill)
+      .setLineJoin("0")
       .drawFillPolygon(
         [
-          this.rect[0], //x1
-          this.rect[3], //y2
-          (this.rect[0] + this.rect[2]) / 2, //x1 + x2 / 2
-          this.rect[1], //y1
-          this.rect[2], //x2
-          this.rect[3], //y2
-          this.rect[0], //x1
-          this.rect[3], //y2
+          this.points[0], //x1
+          this.points[3], //y2
+          (this.points[0] + this.points[2]) / 2, //x1 + x2 / 2
+          this.points[1], //y1
+          this.points[2], //x2
+          this.points[3], //y2
+          this.points[0], //x1
+          this.points[3], //y2
         ],
         this.border?.border_width,
         !!this?.fill
