@@ -64,6 +64,8 @@ export class FreeTextAnnotationObj
   fontSize: number = 18;
   resources: Resource | undefined = undefined;
   textColor: Color | undefined = undefined;
+  lineHeight: number = 0;
+  borderColor: Color | undefined = undefined;
 
   constructor() {
     super();
@@ -134,10 +136,25 @@ export class FreeTextAnnotationObj
         }
 
         let font_family: string = font.baseFont!.substring(1);
-        this.defaultStyleString = `font:${this.fontSize}pt "${font_family}";`;
-        if (this.color) {
-          this.defaultStyleString += `color:${Util.colorToHex(this.color)};`;
+        this.defaultStyleString = `font: ${font_family} ${this.fontSize}pt;`;
+        if (this.textColor) {
+          this.defaultStyleString += `color:${Util.colorToHex(
+            this.textColor
+          )};`;
         }
+        if (this.textJustification) {
+          if (this.textJustification === TextJustification.Centered) {
+            this.defaultStyleString += `text-align:center;`;
+          } else if (this.textJustification === TextJustification.Right) {
+            this.defaultStyleString += `text-align:right;`;
+          } else {
+            this.defaultStyleString += `text-align:left;`;
+          }
+        }
+        if (this.lineHeight > 0) {
+          this.defaultStyleString += `line-height:${this.lineHeight}pt;`;
+        }
+        this.defaultStyleString += `margin:3pt;`;
       } else {
         this.defaultStyleString = undefined;
       }
