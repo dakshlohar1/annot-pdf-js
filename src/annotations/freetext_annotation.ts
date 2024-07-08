@@ -292,7 +292,15 @@ export class FreeTextAnnotationObj
     let cmo = cs.addMarkedContentObject(["/Tx"]);
     let go = cmo.addGraphicObject();
     go.setFillColor(this.color);
-    go.fillRect(this.rect[0], this.rect[1], this.rect[2], this.rect[3]);
+    go.drawFillRect(
+      this.rect[0],
+      this.rect[1],
+      this.rect[2],
+      this.rect[3],
+      undefined,
+      this.border?.border_width,
+      !!this.color
+    );
     let to = go.addTextObject();
 
     to.setColor(this.textColor);
