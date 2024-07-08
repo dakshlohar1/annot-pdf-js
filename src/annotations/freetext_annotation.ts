@@ -117,11 +117,11 @@ export class FreeTextAnnotationObj
     this.resources.addFontDef({ name: font.name, refPtr: font.object_id });
 
     if (this.defaultAppearance.isEmpty()) {
-      if (this.textColor) {
+      if (this.borderColor) {
         this.defaultAppearance.addOperator("rg", [
-          this.textColor.r,
-          this.textColor.g,
-          this.textColor.b,
+          this.borderColor.r,
+          this.borderColor.g,
+          this.borderColor.b,
         ]);
       }
       this.defaultAppearance.addOperator("Tf", [font.name, this.fontSize]);
