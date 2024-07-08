@@ -297,14 +297,15 @@ export class FreeTextAnnotationObj
 
     to.setColor(this.textColor);
     to.setFont(font.name, this.fontSize);
-    to.formatText(
-      this.contents,
-      font,
-      this.fontSize,
-      this.rect,
-      this.textJustification
-    );
-
+    if (this.contents) {
+      to.formatText(
+        this.contents,
+        font,
+        this.fontSize,
+        this.rect,
+        this.textJustification
+      );
+    }
     this.appearanceStream.N = xobj;
     this.additional_objects_to_write.push({
       obj: xobj,
