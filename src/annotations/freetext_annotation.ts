@@ -120,11 +120,15 @@ export class FreeTextAnnotationObj
 
     if (this.defaultAppearance.isEmpty()) {
       if (this.borderColor) {
+        const borderColor = Util.colorToRange01(this.borderColor);
         this.defaultAppearance.addOperator("rg", [
-          this.borderColor.r,
-          this.borderColor.g,
-          this.borderColor.b,
+          borderColor.r,
+          borderColor.g,
+          borderColor.b,
         ]);
+      }
+      if (this.textJustification) {
+        this.defaultAppearance.addOperator("Q", [this.textJustification]);
       }
       this.defaultAppearance.addOperator("Tf", [font.name, this.fontSize]);
     }
