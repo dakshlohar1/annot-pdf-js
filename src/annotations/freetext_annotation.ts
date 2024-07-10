@@ -328,6 +328,13 @@ export class FreeTextAnnotationObj
       xobj.resources = res;
     }
 
+    if (this.color) {
+      go.setFillColor(this.color);
+    }
+    if (this.borderColor) {
+      const borderColor = Util.colorToRange01(this.borderColor);
+      go.setLineColor(borderColor);
+    }
     go.drawFillRect(
       this.rect[0],
       this.rect[1],
