@@ -312,7 +312,29 @@ export class FreeTextAnnotationObj
     xobj.contentStream = cs;
     let cmo = cs.addMarkedContentObject(["/Tx"]);
     let go = cmo.addGraphicObject();
-    go.setFillColor(this.color);
+    if (this.opacity !== 1) {
+      go.addOperator("gs", ["/GParameters"]);
+
+      let gsp = new GraphicsStateParameter(
+        this.factory.parser.getFreeObjectId()
+      );
+      gsp.CA = gsp.ca = this.opacity;
+      this.additional_objects_to_write.push({
+        obj: gsp,
+        func: (ob: any) => ob.writeGStateParameter(),
+      });
+      let res = new Resource();
+      res.addGStateDef({ name: "/GParameters", refPtr: gsp.object_id });
+      xobj.resources = res;
+    }
+
+    if (this.color) {
+      go.setFillColor(this.color);
+    }
+    if (this.borderColor) {
+      const borderColor = Util.colorToRange01(this.borderColor);
+      go.setLineColor(borderColor);
+    }
     go.drawFillRect(
       this.rect[0],
       this.rect[1],
