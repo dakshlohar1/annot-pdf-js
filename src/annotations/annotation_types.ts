@@ -94,6 +94,8 @@ export interface BaseAnnotation {
   takeAppearanceStreamFrom?: Annotation | string | undefined; // use the appearance stream from another annotation
   is_deleted?: boolean; // internal flag to determine whether the annotation was deleted
   factory: any; // Reference to the factory instance
+  shouldWriteContent?: boolean; // flag to determine whether the contents should be written
+  shouldWriteColor?: boolean; // flag to determine whether the color should be written
 }
 
 export class BaseAnnotationObj implements BaseAnnotation {
@@ -121,6 +123,8 @@ export class BaseAnnotationObj implements BaseAnnotation {
   appearanceStreamSelector: string | undefined; // /AS
   takeAppearanceStreamFrom: Annotation | string | undefined = undefined;
   factory: any = undefined;
+  shouldWriteContent: boolean = true;
+  shouldWriteColor: boolean = true;
 
   constructor() {}
 
@@ -164,19 +168,21 @@ export class BaseAnnotationObj implements BaseAnnotation {
     ret = ret.concat(WriterUtil.writeNumberArray(this.rect));
     ret.push(WriterUtil.SPACE);
 
-    ret = ret.concat(WriterUtil.CONTENTS);
-    ret.push(WriterUtil.SPACE);
-    ret.push(WriterUtil.BRACKET_START);
-    ret = ret.concat(
-      Array.from(
-        Util.escapeString(
-          cryptoInterface.encrypt(
-            new Uint8Array(Util.convertStringToAscii(this.contents)),
-            this.object_id
+    if (this.shouldWriteContent) {
+      ret = ret.concat(WriterUtil.CONTENTS);
+      ret.push(WriterUtil.SPACE);
+      ret.push(WriterUtil.BRACKET_START);
+      ret = ret.concat(
+        Array.from(
+          Util.escapeString(
+            cryptoInterface.encrypt(
+              new Uint8Array(Util.convertStringToAscii(this.contents)),
+              this.object_id
+            )
           )
         )
-      )
-    );
+      );
+    }
     ret.push(WriterUtil.BRACKET_END);
     ret.push(WriterUtil.SPACE);
 
@@ -243,7 +249,7 @@ export class BaseAnnotationObj implements BaseAnnotation {
       ret.push(WriterUtil.SPACE);
     }
 
-    if (this.color) {
+    if (this.color && this.shouldWriteColor) {
       this.color = Util.colorToRange01(this.color);
 
       ret.push(WriterUtil.SPACE);

@@ -64,6 +64,8 @@ export class FreeTextAnnotationObj
   fontSize: number = 18;
   resources: Resource | undefined = undefined;
   textColor: Color | undefined = undefined;
+  lineHeight: number = 0;
+  borderColor: Color | undefined = undefined;
 
   constructor() {
     super();
@@ -117,12 +119,16 @@ export class FreeTextAnnotationObj
     this.resources.addFontDef({ name: font.name, refPtr: font.object_id });
 
     if (this.defaultAppearance.isEmpty()) {
-      if (this.textColor) {
+      if (this.borderColor) {
+        const borderColor = Util.colorToRange01(this.borderColor);
         this.defaultAppearance.addOperator("rg", [
-          this.textColor.r,
-          this.textColor.g,
-          this.textColor.b,
+          borderColor.r,
+          borderColor.g,
+          borderColor.b,
         ]);
+      }
+      if (this.textJustification) {
+        this.defaultAppearance.addOperator("Q", [this.textJustification]);
       }
       this.defaultAppearance.addOperator("Tf", [font.name, this.fontSize]);
     }
@@ -134,10 +140,25 @@ export class FreeTextAnnotationObj
         }
 
         let font_family: string = font.baseFont!.substring(1);
-        this.defaultStyleString = `font:${this.fontSize}pt "${font_family}";`;
-        if (this.color) {
-          this.defaultStyleString += `color:${Util.colorToHex(this.color)};`;
+        this.defaultStyleString = `font: ${font_family} ${this.fontSize}pt;`;
+        if (this.textColor) {
+          this.defaultStyleString += `color:${Util.colorToHex(
+            this.textColor
+          )};`;
         }
+        if (this.textJustification) {
+          if (this.textJustification === TextJustification.Centered) {
+            this.defaultStyleString += `text-align:center;`;
+          } else if (this.textJustification === TextJustification.Right) {
+            this.defaultStyleString += `text-align:right;`;
+          } else {
+            this.defaultStyleString += `text-align:left;`;
+          }
+        }
+        if (this.lineHeight > 0) {
+          this.defaultStyleString += `line-height:${this.lineHeight}pt;`;
+        }
+        this.defaultStyleString += `margin:3pt;`;
       } else {
         this.defaultStyleString = undefined;
       }
@@ -292,19 +313,28 @@ export class FreeTextAnnotationObj
     let cmo = cs.addMarkedContentObject(["/Tx"]);
     let go = cmo.addGraphicObject();
     go.setFillColor(this.color);
-    go.fillRect(this.rect[0], this.rect[1], this.rect[2], this.rect[3]);
+    go.drawFillRect(
+      this.rect[0],
+      this.rect[1],
+      this.rect[2],
+      this.rect[3],
+      undefined,
+      this.border?.border_width,
+      !!this.color
+    );
     let to = go.addTextObject();
 
     to.setColor(this.textColor);
     to.setFont(font.name, this.fontSize);
-    to.formatText(
-      this.contents,
-      font,
-      this.fontSize,
-      this.rect,
-      this.textJustification
-    );
-
+    if (this.contents) {
+      to.formatText(
+        this.contents,
+        font,
+        this.fontSize,
+        this.rect,
+        this.textJustification
+      );
+    }
     this.appearanceStream.N = xobj;
     this.additional_objects_to_write.push({
       obj: xobj,
