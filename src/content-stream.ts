@@ -563,7 +563,7 @@ export class TextObject extends Operator {
 
       this.setText(text.substring(positions[0].start, positions[0].end + 1), [
         last_pos,
-        rect_height - textSize * 1.2 + rect[1],
+        -textSize + rect[1],
       ]);
 
       for (let i = 1; i < positions.length; ++i) {
