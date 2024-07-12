@@ -34,6 +34,13 @@ export enum FreeTextType {
   FreeTextTypeWriter,
 }
 
+export type ITextMargin = {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+};
+
 export interface FreeTextAnnotation extends MarkupAnnotation {
   textJustification?: TextJustification; // /Q
   defaultAppearance: ContentStream; // /DA
@@ -47,6 +54,7 @@ export interface FreeTextAnnotation extends MarkupAnnotation {
   font: string | Font;
   fontSize: number;
   textColor: Color | undefined;
+  textMargin?: ITextMargin;
 }
 
 export class FreeTextAnnotationObj
@@ -66,6 +74,7 @@ export class FreeTextAnnotationObj
   textColor: Color | undefined = undefined;
   lineHeight: number = 0;
   borderColor: Color | undefined = undefined;
+  textMargin: ITextMargin | undefined = undefined;
 
   constructor() {
     super();
@@ -327,7 +336,6 @@ export class FreeTextAnnotationObj
       res.addGStateDef({ name: "/GParameters", refPtr: gsp.object_id });
       xobj.resources = res;
     }
-
     if (this.color) {
       go.setFillColor(this.color);
     }
@@ -354,14 +362,15 @@ export class FreeTextAnnotationObj
         font,
         this.fontSize,
         this.rect,
-        this.textJustification
+        this.textJustification,
+        this.textMargin
       );
     }
     this.appearanceStream.N = xobj;
     this.additional_objects_to_write.push({
       obj: xobj,
       func: (ob: any, cryptoInterface: CryptoInterface) =>
-        ob.writeXObject(cryptoInterface),
+        ob.writeXObject(cryptoInterface, false),
     });
   }
 }

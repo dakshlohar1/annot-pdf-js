@@ -3,7 +3,10 @@ import { Util } from "./util";
 import { WriterUtil } from "./writer-util";
 import { Color } from "./annotations/annotation_types";
 import { Font } from "./fonts";
-import { TextJustification } from "./annotations/freetext_annotation";
+import {
+  ITextMargin,
+  TextJustification,
+} from "./annotations/freetext_annotation";
 
 export class Operator {
   operators: Operator[] = [];
@@ -529,18 +532,19 @@ export class TextObject extends Operator {
     font: Font,
     textSize: number,
     rect: number[],
-    justification: TextJustification | undefined = undefined
+    justification: TextJustification | undefined = undefined,
+    textMargin: ITextMargin = { top: 0, right: 0, bottom: 0, left: 0 }
   ): TextObject {
     let rect_width: number = Math.abs(rect[2] - rect[0]);
     let rect_height: number = Math.abs(rect[3] - rect[1]);
 
     let calc_just = (textwidth: number) => {
       if (justification === TextJustification.Centered) {
-        return rect_width / 2 - textwidth / 2 + rect[0];
+        return rect_width / 2 - textwidth / 2 + rect[0] + textMargin.left;
       } else if (justification === TextJustification.Right) {
-        return rect_width + rect[0] - textwidth;
+        return rect_width + rect[0] + textMargin.left - textwidth;
       } else {
-        return rect[0];
+        return rect[0] + textMargin.left;
       }
     };
 
@@ -558,19 +562,19 @@ export class TextObject extends Operator {
       return this;
     } else {
       let positions: { start: number; end: number; width: number }[] =
-        font.proposeLinebreaks(text, textSize, rect_width);
+        font.proposeLinebreaks(text, textSize, rect_width, textMargin);
       let last_pos: number = calc_just(positions[0].width);
 
       this.setText(text.substring(positions[0].start, positions[0].end + 1), [
         last_pos,
-        -textSize + rect[1],
+        -textSize + rect[1] - textMargin.top,
       ]);
 
       for (let i = 1; i < positions.length; ++i) {
         let x_pos = calc_just(positions[i].width);
         this.setTextRelative(
           text.substring(positions[i].start, positions[i].end + 1),
-          [x_pos - last_pos, -textSize]
+          [x_pos - last_pos, -textSize - textMargin.top]
         );
         last_pos = x_pos;
       }
