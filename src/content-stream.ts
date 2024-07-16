@@ -578,6 +578,52 @@ export class TextObject extends Operator {
         );
         last_pos = x_pos;
       }
+      return this;
+    }
+  }
+
+  /**
+   * Places a text in the rectangle defined by 'rect'. It applies text justification.
+   *
+   * It assumes that the text is already formatted with line breaks it means in contains '\n' characters
+   */
+  formatTextWithLineBreaks(
+    text: string,
+    font: Font,
+    textSize: number,
+    rect: number[],
+    justification: TextJustification | undefined = undefined,
+    textMargin: ITextMargin = { top: 0, right: 0, bottom: 0, left: 0 },
+    styles: FreeTextAnnotation["styles"] = []
+  ): TextObject {
+    let rect_width: number = Math.abs(rect[2] - rect[0]);
+
+    let calc_just = (textwidth: number) => {
+      if (justification === TextJustification.Centered) {
+        return rect_width / 2 - textwidth / 2 + rect[0];
+      } else if (justification === TextJustification.Right) {
+        return rect_width + rect[0] - textMargin.left - textwidth;
+      } else {
+        return rect[0] + textMargin.left;
+      }
+    };
+
+    let lines = text.split("\n");
+
+    const firstLineWidth = font.calculateTextDimensions(lines[0], textSize)[0];
+    let last_post = calc_just(firstLineWidth);
+
+    this.setText(lines[0], [last_post, rect[1] - textSize - textMargin.top]);
+
+    for (let i = 1; i < lines.length; ++i) {
+      let x_pos = calc_just(
+        font.calculateTextDimensions(lines[i], textSize)[0]
+      );
+      this.setTextRelative(lines[i], [
+        x_pos - last_post,
+        -textSize - textMargin.top,
+      ]);
+      last_post = x_pos;
     }
 
     return this;
