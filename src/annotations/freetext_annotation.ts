@@ -357,13 +357,13 @@ export class FreeTextAnnotationObj
     to.setColor(this.textColor);
     to.setFont(font.name, this.fontSize);
     if (this.contents) {
-      to.formatText(
+      to.formatTextWithLineBreaks(
         this.contents,
         font,
         this.fontSize,
         this.rect,
-        this.textJustification,
-        this.textMargin
+        this.getJustification(this.textJustification as unknown as string),
+        this.textMargin,
       );
     }
     this.appearanceStream.N = xobj;
@@ -372,5 +372,16 @@ export class FreeTextAnnotationObj
       func: (ob: any, cryptoInterface: CryptoInterface) =>
         ob.writeXObject(cryptoInterface, false),
     });
+  }
+
+  getJustification(textAlign: string): TextJustification {
+    switch (textAlign) {
+      case "center":
+        return TextJustification.Centered;
+      case "right":
+        return TextJustification.Right;
+      default:
+        return TextJustification.Left;
+    }
   }
 }
