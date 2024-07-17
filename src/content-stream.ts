@@ -594,7 +594,8 @@ export class TextObject extends Operator {
     rect: number[],
     justification: TextJustification | undefined = undefined,
     textMargin: ITextMargin = { top: 0, right: 0, bottom: 0, left: 0 },
-    styles: FreeTextAnnotation["styles"] = []
+    styles: FreeTextAnnotation["styles"] = [],
+    strokeWidth: number = 2
   ): TextObject {
     let rect_width: number = Math.abs(rect[2] - rect[0]);
 
@@ -613,16 +614,16 @@ export class TextObject extends Operator {
     const firstLineWidth = font.calculateTextDimensions(lines[0], textSize)[0];
     let last_post = calc_just(firstLineWidth);
 
-    this.setText(lines[0], [last_post, rect[1] - textSize - textMargin.top]);
+    this.setText(lines[0], [
+      last_post + strokeWidth + textMargin.left,
+      rect[1] - textSize - strokeWidth - textMargin.top,
+    ]);
 
     for (let i = 1; i < lines.length; ++i) {
       let x_pos = calc_just(
         font.calculateTextDimensions(lines[i], textSize)[0]
       );
-      this.setTextRelative(lines[i], [
-        x_pos - last_post,
-        -textSize - textMargin.top,
-      ]);
+      this.setTextRelative(lines[i], [x_pos - last_post, -textSize]);
       last_post = x_pos;
     }
 
