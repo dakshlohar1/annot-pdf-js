@@ -4,6 +4,7 @@ import { WriterUtil } from "./writer-util";
 import { Color } from "./annotations/annotation_types";
 import { Font } from "./fonts";
 import {
+  FreeTextAnnotation,
   ITextMargin,
   TextJustification,
 } from "./annotations/freetext_annotation";
@@ -529,7 +530,8 @@ export class TextObject extends Operator {
     textSize: number,
     rect: number[],
     justification: TextJustification | undefined = undefined,
-    textMargin: ITextMargin = { top: 0, right: 0, bottom: 0, left: 0 }
+    textMargin: ITextMargin = { top: 0, right: 0, bottom: 0, left: 0 },
+    styles: FreeTextAnnotation["styles"] = []
   ): TextObject {
     let rect_width: number = Math.abs(rect[2] - rect[0]);
     let rect_height: number = Math.abs(rect[3] - rect[1]);
@@ -588,41 +590,51 @@ export class TextObject extends Operator {
     font: Font,
     textSize: number,
     rect: number[],
-    justification: TextJustification | undefined = undefined,
+    justification?: TextJustification | undefined,
     textMargin: ITextMargin = { top: 0, right: 0, bottom: 0, left: 0 },
     styles: FreeTextAnnotation["styles"] = [],
-    strokeWidth: number = 2
-  ): TextObject {
-    let rect_width: number = Math.abs(rect[2] - rect[0]);
-
-    let calc_just = (textwidth: number) => {
+    strokeWidth: number = 0,
+    /**
+     * Array which contains the maximum height of each line
+     */
+    linesHeight: number[] = []
+  ) {
+    const innerRect = [
+      rect[0] + strokeWidth,
+      rect[1] - strokeWidth,
+      rect[2] - strokeWidth,
+      rect[3] + strokeWidth,
+    ];
+    let rect_width = Math.abs(innerRect[2] - innerRect[0]);
+    let calc_just = (textWidth: number) => {
       if (justification === TextJustification.Centered) {
-        return rect_width / 2 - textwidth / 2 + rect[0];
+        return innerRect[0] + rect_width / 2 - textWidth / 2;
       } else if (justification === TextJustification.Right) {
-        return rect_width + rect[0] - textMargin.left - textwidth;
+        return innerRect[2] - textWidth - textMargin.right;
       } else {
-        return rect[0] + textMargin.left;
+        return innerRect[0] + textMargin.left;
       }
     };
-
     let lines = text.split("\n");
+    const [firstLineWidth] = font.calculateTextDimensions(
+      lines[0] || " ",
+      textSize
+    );
 
-    const firstLineWidth = font.calculateTextDimensions(lines[0], textSize)[0];
     let last_post = calc_just(firstLineWidth);
-
-    this.setText(lines[0], [
-      last_post + strokeWidth + textMargin.left,
-      rect[1] - textSize - strokeWidth - textMargin.top,
-    ]);
-
+    this.setText(lines[0] || " ", [last_post, innerRect[1] - textSize]);
     for (let i = 1; i < lines.length; ++i) {
-      let x_pos = calc_just(
-        font.calculateTextDimensions(lines[i], textSize)[0]
+      const [lineWidth] = font.calculateTextDimensions(
+        lines[i] || " ",
+        textSize
       );
-      this.setTextRelative(lines[i], [x_pos - last_post, -textSize]);
+      let x_pos = calc_just(lineWidth);
+      this.setTextRelative(lines[i] || " ", [
+        x_pos - last_post,
+        -linesHeight[i],
+      ]);
       last_post = x_pos;
     }
-
     return this;
   }
 
