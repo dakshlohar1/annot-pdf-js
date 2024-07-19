@@ -475,8 +475,6 @@ export class TextObject extends Operator {
       );
     }
 
-    text = text.trim();
-
     if (text.charAt(0) !== "(" || text.charAt(text.length - 1) !== ")") {
       text = `(${text})`;
     }
@@ -507,8 +505,6 @@ export class TextObject extends Operator {
         "Invalid number of positioning elements. Must be x and y coordinate"
       );
     }
-
-    text = text.trim();
 
     if (text.charAt(0) !== "(" || text.charAt(text.length - 1) !== ")") {
       text = `(${text})`;
