@@ -57,6 +57,7 @@ export interface FreeTextAnnotation extends MarkupAnnotation {
   textMargin?: ITextMargin;
   styles: Array<{ start: number; end: number; style: any }>;
   linesHeight?: number[];
+  underline?: boolean;
 }
 
 export class FreeTextAnnotationObj
@@ -79,6 +80,7 @@ export class FreeTextAnnotationObj
   textMargin: ITextMargin | undefined = undefined;
   styles = [];
   linesHeight?: number[] | undefined;
+  underline?: boolean | undefined;
 
   constructor() {
     super();
@@ -370,7 +372,9 @@ export class FreeTextAnnotationObj
         this.textMargin,
         this.styles,
         this.border?.border_width,
-        this.linesHeight
+        this.linesHeight,
+        this.underline,
+        this.textColor
       );
     }
     this.appearanceStream.N = xobj;

@@ -453,6 +453,19 @@ export class TextObject extends Operator {
     super("BT");
   }
 
+  moveTo(x: number, y: number): TextObject {
+    this.addOperator("m", [x, y]);
+    return this;
+  }
+
+  setLineColor(color: Color | undefined = undefined): TextObject {
+    if (!color) color = { r: 0, g: 0, b: 0 };
+
+    color = Util.colorToRange01(color);
+    this.addOperator("RG", [color.r, color.g, color.b]);
+    return this;
+  }
+
   /**
    * Places text relative from the last given position or Tm object (origin) with + x_rel, + y_rel location
    * */
@@ -597,7 +610,9 @@ export class TextObject extends Operator {
     /**
      * Array which contains the maximum height of each line
      */
-    linesHeight: number[] = []
+    linesHeight: number[] = [],
+    underline: boolean = false,
+    textColors: Color | undefined = undefined
   ) {
     const innerRect = [
       rect[0] + strokeWidth,
@@ -605,6 +620,7 @@ export class TextObject extends Operator {
       rect[2] - strokeWidth,
       rect[3] + strokeWidth,
     ];
+    let currentTotalPlottedHeightWithoutUnderline = 0;
     let rect_width = Math.abs(innerRect[2] - innerRect[0]);
     let calc_just = (textWidth: number) => {
       if (justification === TextJustification.Centered) {
@@ -623,6 +639,18 @@ export class TextObject extends Operator {
 
     let last_post = calc_just(firstLineWidth);
     this.setText(lines[0] || " ", [last_post, innerRect[1] - textSize]);
+    if (underline) {
+      const underlineY =
+        innerRect[1] - (linesHeight[0] - (linesHeight[0] - textSize * 1.2));
+      this.underline({
+        textColor: textColors,
+        textSize,
+        width: firstLineWidth,
+        x: last_post,
+        y: underlineY,
+      });
+    }
+    currentTotalPlottedHeightWithoutUnderline += linesHeight[0];
     for (let i = 1; i < lines.length; ++i) {
       const [lineWidth] = font.calculateTextDimensions(
         lines[i] || " ",
@@ -633,6 +661,20 @@ export class TextObject extends Operator {
         x_pos - last_post,
         -linesHeight[i],
       ]);
+      currentTotalPlottedHeightWithoutUnderline += linesHeight[i];
+      if (underline) {
+        const underlineY =
+          innerRect[1] -
+          (currentTotalPlottedHeightWithoutUnderline -
+            (linesHeight[i] - textSize * 1.2));
+        this.underline({
+          textColor: textColors,
+          textSize,
+          width: lineWidth,
+          x: x_pos,
+          y: underlineY,
+        });
+      }
       last_post = x_pos;
     }
     return this;
@@ -650,6 +692,30 @@ export class TextObject extends Operator {
     color = Util.colorToRange01(color);
     this.addOperator("rg", [color.r, color.g, color.b]);
     return this;
+  }
+
+  underline(opt: {
+    textColor: Color | undefined;
+    textSize: number;
+    width: number;
+    x: number;
+    y: number;
+  }) {
+    const { textColor, textSize, width, x, y } = opt;
+    // save the current graphic state
+    this.addOperator("q");
+    if (textColor) {
+      this.setLineColor(textColor);
+    }
+    // calculate the line width required for the underline
+    const lineWidth = textSize < 10 ? 0.5 : Math.floor(textSize / 10);
+    this.addOperator("w", [lineWidth]);
+
+    this.moveTo(x, y + lineWidth);
+    this.addOperator("l", [x + width, y + lineWidth]);
+    this.addOperator("S");
+    // restore the graphic state
+    this.addOperator("Q");
   }
 }
 
