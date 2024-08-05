@@ -131,7 +131,7 @@ export class GraphicsObject extends Operator {
     x_2: number,
     y_2: number,
     cornerRadius: number | undefined = undefined,
-    linewidth: number = 2,
+    linewidth: number = 0,
     shouldFill: boolean = true
   ): GraphicsObject {
     x_1 += linewidth / 2;
@@ -139,7 +139,7 @@ export class GraphicsObject extends Operator {
     x_2 -= linewidth / 2;
     y_2 += linewidth / 2;
 
-    this.addOperator("w", [linewidth]);
+    linewidth && this.addOperator("w", [linewidth]);
 
     if (
       cornerRadius &&
@@ -169,7 +169,7 @@ export class GraphicsObject extends Operator {
         Math.abs(y_2 - y_1),
       ]);
     }
-    this.addOperator(shouldFill ? "B" : "S");
+    this.addOperator(shouldFill ? (linewidth ? "B" : "f") : "S");
     return this;
   }
 

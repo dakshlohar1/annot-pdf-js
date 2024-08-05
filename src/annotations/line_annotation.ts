@@ -98,13 +98,13 @@ export class LineAnnotationObj
   public createDefaultAppearanceStream() {
     this.appearanceStream = new AppStream(this);
     this.appearanceStream.new_object = true;
-    let xobj = new XObjectObj();
-    xobj.object_id = this.factory.parser.getFreeObjectId();
-    xobj.new_object = true;
-    xobj.bBox = this.rect;
-    xobj.matrix = [1, 0, 0, 1, -this.rect[0], -this.rect[1]];
+    let xObj = new XObjectObj();
+    xObj.object_id = this.factory.parser.getFreeObjectId();
+    xObj.new_object = true;
+    xObj.bBox = this.rect;
+    xObj.matrix = [1, 0, 0, 1, -this.rect[0], -this.rect[1]];
     let cs = new ContentStream();
-    xobj.contentStream = cs;
+    xObj.contentStream = cs;
     let cmo = cs.addMarkedContentObject(["/Tx"]);
     let go = cmo.addGraphicObject();
 
@@ -121,7 +121,7 @@ export class LineAnnotationObj
       });
       let res = new Resource();
       res.addGStateDef({ name: "/GParameters", refPtr: gsp.object_id });
-      xobj.resources = res;
+      xObj.resources = res;
     }
     go.setLineColor(this.color)
       .setFillColor(this.color)
@@ -182,9 +182,9 @@ export class LineAnnotationObj
       }
     });
 
-    this.appearanceStream.N = xobj;
+    this.appearanceStream.N = xObj;
     this.additional_objects_to_write.push({
-      obj: xobj,
+      obj: xObj,
       func: (ob: any, cryptoInterface: CryptoInterface) =>
         ob.writeXObject(cryptoInterface, false),
     });
