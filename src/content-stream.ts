@@ -135,9 +135,9 @@ export class GraphicsObject extends Operator {
     shouldFill: boolean = true
   ): GraphicsObject {
     x_1 += linewidth / 2;
-    y_1 -= linewidth / 2;
+    y_1 += linewidth / 2;
     x_2 -= linewidth / 2;
-    y_2 += linewidth / 2;
+    y_2 -= linewidth / 2;
 
     linewidth && this.addOperator("w", [linewidth]);
 
@@ -162,14 +162,18 @@ export class GraphicsObject extends Operator {
       this.addOperator("l", [x_1 + cornerRadius, y_1]);
       this.addOperator("c", [x_1, y_1, x_1, y_1, x_1, y_1 + cornerRadius]);
     } else {
-      this.addOperator("re", [
-        x_1,
-        y_2,
-        Math.abs(x_2 - x_1),
-        Math.abs(y_2 - y_1),
-      ]);
+      this.addOperator("m", [x_1 - linewidth / 2, y_2]);
+      this.addOperator("l", [x_2, y_2]);
+      this.addOperator("l", [x_2, y_1]);
+      this.addOperator("l", [x_1, y_1]);
+      this.addOperator("l", [x_1, y_2]);
     }
     this.addOperator(shouldFill ? (linewidth ? "B" : "f") : "S");
+    return this;
+  }
+
+  addCurrentTransformationMatrix(ctm: number[]) {
+    this.addOperator("cm", ctm);
     return this;
   }
 
@@ -225,9 +229,9 @@ export class GraphicsObject extends Operator {
     shouldFill: boolean = true
   ): GraphicsObject {
     x1 += linewidth / 2;
-    y1 -= linewidth / 2;
+    y1 += linewidth / 2;
     x2 -= linewidth / 2;
-    y2 += linewidth / 2;
+    y2 -= linewidth / 2;
     const KAPPA = 0.5522847498307936;
     const r1 = Math.abs(x1 - x2) / 2;
     const r2 = Math.abs(y1 - y2) / 2;
@@ -525,7 +529,7 @@ export class TextObject extends Operator {
     }
 
     if (typeof x !== "undefined" && typeof y !== "undefined") {
-      this.addOperator("Tm", [1, 0, 0, 1, x, y]);
+      this.addOperator("Tm", [1, 0, 0, -1, x, y]);
     }
     this.addOperator("Tj", [text]);
 
@@ -616,9 +620,9 @@ export class TextObject extends Operator {
   ) {
     const innerRect = [
       rect[0] + strokeWidth,
-      rect[1] - strokeWidth,
+      rect[1] + strokeWidth,
       rect[2] - strokeWidth,
-      rect[3] + strokeWidth,
+      rect[3] - strokeWidth,
     ];
     let currentTotalPlottedHeightWithoutUnderline = 0;
     let rect_width = Math.abs(innerRect[2] - innerRect[0]);
@@ -638,10 +642,13 @@ export class TextObject extends Operator {
     );
 
     let last_post = calc_just(firstLineWidth);
-    this.setText(lines[0] || " ", [last_post, innerRect[1] - textSize]);
+    this.setText(lines[0] || " ", [
+      last_post,
+      innerRect[1] + textSize + textMargin.top,
+    ]);
     if (underline) {
       const underlineY =
-        innerRect[1] - (linesHeight[0] - (linesHeight[0] - textSize * 1.2));
+        innerRect[1] + (linesHeight[0] - (linesHeight[0] - textSize * 1.2));
       this.underline({
         textColor: textColors,
         textSize,
@@ -664,7 +671,7 @@ export class TextObject extends Operator {
       currentTotalPlottedHeightWithoutUnderline += linesHeight[i];
       if (underline) {
         const underlineY =
-          innerRect[1] -
+          innerRect[1] +
           (currentTotalPlottedHeightWithoutUnderline -
             (linesHeight[i] - textSize * 1.2));
         this.underline({
