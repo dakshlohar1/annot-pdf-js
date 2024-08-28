@@ -2,6 +2,7 @@ import {
   MarkupAnnotation,
   MarkupAnnotationObj,
   Color,
+  ICTM,
 } from "./annotation_types";
 import { ErrorList, InvalidAnnotationTypeError } from "./annotation_errors";
 import { CryptoInterface } from "../parser";
@@ -20,7 +21,6 @@ export interface CircleSquareAnnotation extends MarkupAnnotation {
   fill?: Color; // /IC
   borderEffect?: any; // /BE
   differenceRectangle?: number[]; // /RD
-  angle?: number;
 }
 
 export class CircleSquareAnnotationObj
@@ -109,13 +109,30 @@ export class CircleAnnotationObj extends CircleSquareAnnotationObj {
   public createDefaultAppearanceStream() {
     this.appearanceStream = new AppStream(this);
     this.appearanceStream.new_object = true;
-    let xobj = new XObjectObj();
-    xobj.object_id = this.factory.parser.getFreeObjectId();
-    xobj.new_object = true;
-    xobj.bBox = this.rect;
-    xobj.matrix = [1, 0, 0, 1, -this.rect[0], -this.rect[1]];
+    let xObj = new XObjectObj();
+    xObj.object_id = this.factory.parser.getFreeObjectId();
+    xObj.new_object = true;
+    const lastRect = this.rect;
+    if (this.pageHeight) {
+      const updatedRect = [
+        this.rect[0] -
+          (this?.border?.border_width ? this.border.border_width : 0),
+        this.pageHeight -
+          this.rect[3] -
+          (this?.border?.border_width ? this.border.border_width : 0),
+        this.rect[2] +
+          (this?.border?.border_width ? this.border.border_width : 0),
+        this.pageHeight -
+          this.rect[1] +
+          (this?.border?.border_width ? this.border.border_width : 0),
+      ];
+      xObj.bBox = updatedRect; //left, bottom, right, and top edges
+      this.rect = updatedRect;
+    } else {
+      xObj.bBox = this.rect; //left, bottom, right, and top edges
+    }
     let cs = new ContentStream();
-    xobj.contentStream = cs;
+    xObj.contentStream = cs;
     let cmo = cs.addMarkedContentObject(["/Tx"]);
     let go = cmo.addGraphicObject();
 
@@ -132,25 +149,31 @@ export class CircleAnnotationObj extends CircleSquareAnnotationObj {
       });
       let res = new Resource();
       res.addGStateDef({ name: "/GParameters", refPtr: gsp.object_id });
-      xobj.resources = res;
+      xObj.resources = res;
+    }
+    if (this.pageHeight) {
+      // flip the y axis
+      const ctm = [1, 0, 0, -1, 0, this.pageHeight] as ICTM;
+      this.ctm = ctm;
+      go.addCurrentTransformationMatrix(ctm);
     }
 
     go.setLineColor(this.color)
       .setFillColor(this.fill)
       .drawFillCircle(
-        this.rect[0],
-        this.rect[1],
-        this.rect[2],
-        this.rect[3],
+        lastRect[0],
+        lastRect[1],
+        lastRect[2],
+        lastRect[3],
         this.border?.border_width,
         !!this.fill
       );
 
-    this.appearanceStream.N = xobj;
+    this.appearanceStream.N = xObj;
     this.additional_objects_to_write.push({
-      obj: xobj,
+      obj: xObj,
       func: (ob: any, cryptoInterface: CryptoInterface) =>
-        ob.writeXObject(cryptoInterface),
+        ob.writeXObject(cryptoInterface, false),
     });
   }
 }
@@ -183,19 +206,30 @@ export class SquareAnnotationObj extends CircleSquareAnnotationObj {
   public createDefaultAppearanceStream() {
     this.appearanceStream = new AppStream(this);
     this.appearanceStream.new_object = true;
-    let xobj = new XObjectObj();
-    xobj.object_id = this.factory.parser.getFreeObjectId();
-    xobj.new_object = true;
-    xobj.bBox = this.rect;
-    if (this.angle) {
-      xobj.matrix = Util.rotate(this.angle, [1, 0, 0, 1, 0, 0], {
-        origin: [this.rect[0], this.rect[1]],
-      });
+    let xObj = new XObjectObj();
+    xObj.object_id = this.factory.parser.getFreeObjectId();
+    xObj.new_object = true;
+    const lastRect = this.rect;
+    if (this.pageHeight) {
+      const updatedRect = [
+        this.rect[0] -
+          (this?.border?.border_width ? this.border.border_width : 0),
+        this.pageHeight -
+          this.rect[3] -
+          (this?.border?.border_width ? this.border.border_width : 0),
+        this.rect[2] +
+          (this?.border?.border_width ? this.border.border_width : 0),
+        this.pageHeight -
+          this.rect[1] +
+          (this?.border?.border_width ? this.border.border_width : 0),
+      ];
+      xObj.bBox = updatedRect; //left, bottom, right, and top edges
+      this.rect = updatedRect;
     } else {
-      xobj.matrix = [1, 0, 0, 1, -this.rect[0], -this.rect[1]];
+      xObj.bBox = this.rect; //left, bottom, right, and top edges
     }
     let cs = new ContentStream();
-    xobj.contentStream = cs;
+    xObj.contentStream = cs;
     let cmo = cs.addMarkedContentObject(["/Tx"]);
     let go = cmo.addGraphicObject();
 
@@ -213,24 +247,28 @@ export class SquareAnnotationObj extends CircleSquareAnnotationObj {
       });
       let res = new Resource();
       res.addGStateDef({ name: "/GParameters", refPtr: gsp.object_id });
-      xobj.resources = res;
+      xObj.resources = res;
     }
 
+    if (this.pageHeight) {
+      // flip the y axis
+      go.addCurrentTransformationMatrix([1, 0, 0, -1, 0, this.pageHeight]);
+    }
     go.setLineColor(this.color)
       .setFillColor(this.fill)
       .drawFillRect(
-        this.rect[0],
-        this.rect[1],
-        this.rect[2],
-        this.rect[3],
+        lastRect[0],
+        lastRect[1],
+        lastRect[2],
+        lastRect[3],
         undefined,
         this.border?.border_width,
         !!this?.fill
       );
 
-    this.appearanceStream.N = xobj;
+    this.appearanceStream.N = xObj;
     this.additional_objects_to_write.push({
-      obj: xobj,
+      obj: xObj,
       func: (ob: any, cryptoInterface: CryptoInterface) =>
         ob.writeXObject(cryptoInterface, false),
     });

@@ -1,4 +1,5 @@
 import {
+  ICTM,
   LineEndingStyle,
   MarkupAnnotation,
   MarkupAnnotationObj,
@@ -101,8 +102,24 @@ export class LineAnnotationObj
     let xObj = new XObjectObj();
     xObj.object_id = this.factory.parser.getFreeObjectId();
     xObj.new_object = true;
-    xObj.bBox = this.rect;
-    xObj.matrix = [1, 0, 0, 1, -this.rect[0], -this.rect[1]];
+    if (this.pageHeight) {
+      const updatedRect = [
+        this.rect[0] -
+          (this?.border?.border_width ? this.border.border_width : 0),
+        this.pageHeight -
+          this.rect[3] -
+          (this?.border?.border_width ? this.border.border_width : 0),
+        this.rect[2] +
+          (this?.border?.border_width ? this.border.border_width : 0),
+        this.pageHeight -
+          this.rect[1] +
+          (this?.border?.border_width ? this.border.border_width : 0),
+      ];
+      xObj.bBox = updatedRect; //left, bottom, right, and top edges
+      this.rect = updatedRect;
+    } else {
+      xObj.bBox = this.rect; //left, bottom, right, and top edges
+    }
     let cs = new ContentStream();
     xObj.contentStream = cs;
     let cmo = cs.addMarkedContentObject(["/Tx"]);
@@ -122,6 +139,12 @@ export class LineAnnotationObj
       let res = new Resource();
       res.addGStateDef({ name: "/GParameters", refPtr: gsp.object_id });
       xObj.resources = res;
+    }
+    if (this.pageHeight) {
+      // flip the y axis
+      const ctm = [1, 0, 0, -1, 0, this.pageHeight] as ICTM;
+      this.ctm = ctm;
+      go.addCurrentTransformationMatrix(ctm);
     }
     go.setLineColor(this.color)
       .setFillColor(this.color)

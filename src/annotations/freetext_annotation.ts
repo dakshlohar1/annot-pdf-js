@@ -3,6 +3,7 @@ import {
   MarkupAnnotationObj,
   LineEndingStyle,
   Color,
+  ICTM,
 } from "./annotation_types";
 import {
   ErrorList,
@@ -313,18 +314,35 @@ export class FreeTextAnnotationObj
 
     this.appearanceStream = new AppStream(this);
     this.appearanceStream.new_object = true;
-    let xobj = new XObjectObj();
-    xobj.object_id = this.factory.parser.getFreeObjectId();
-    xobj.new_object = true;
-    xobj.bBox = this.rect;
-    xobj.matrix = [1, 0, 0, 1, -this.rect[0], -this.rect[1]];
-    if (!xobj.resources) {
-      xobj.resources = new Resource();
+    let xObj = new XObjectObj();
+    xObj.object_id = this.factory.parser.getFreeObjectId();
+    xObj.new_object = true;
+    const lastRect = this.rect;
+    if (this.pageHeight) {
+      const updatedRect = [
+        this.rect[0] -
+          (this?.border?.border_width ? this.border.border_width : 0),
+        this.pageHeight -
+          this.rect[3] -
+          (this?.border?.border_width ? this.border.border_width : 0),
+        this.rect[2] +
+          (this?.border?.border_width ? this.border.border_width : 0),
+        this.pageHeight -
+          this.rect[1] +
+          (this?.border?.border_width ? this.border.border_width : 0),
+      ];
+      xObj.bBox = updatedRect; //left, bottom, right, and top edges
+      this.rect = updatedRect;
+    } else {
+      xObj.bBox = this.rect; //left, bottom, right, and top edges
     }
-    xobj.resources.addFontDef({ name: font.name!, refPtr: font.object_id });
+    if (!xObj.resources) {
+      xObj.resources = new Resource();
+    }
+    xObj.resources.addFontDef({ name: font.name!, refPtr: font.object_id });
 
     let cs = new ContentStream();
-    xobj.contentStream = cs;
+    xObj.contentStream = cs;
     let cmo = cs.addMarkedContentObject(["/Tx"]);
     let go = cmo.addGraphicObject();
     if (this.opacity !== 1) {
@@ -340,7 +358,13 @@ export class FreeTextAnnotationObj
       });
       let res = new Resource();
       res.addGStateDef({ name: "/GParameters", refPtr: gsp.object_id });
-      xobj.resources = res;
+      xObj.resources = res;
+    }
+    if (this.pageHeight) {
+      // flip the y axis
+      const ctm = [1, 0, 0, -1, 0, this.pageHeight] as ICTM;
+      this.ctm = ctm;
+      go.addCurrentTransformationMatrix(ctm);
     }
     if (this.color) {
       go.setFillColor(this.color);
@@ -350,10 +374,10 @@ export class FreeTextAnnotationObj
       go.setLineColor(borderColor);
     }
     go.drawFillRect(
-      this.rect[0],
-      this.rect[1],
-      this.rect[2],
-      this.rect[3],
+      lastRect[0],
+      lastRect[1],
+      lastRect[2],
+      lastRect[3],
       undefined,
       this.border?.border_width,
       !!this.color
@@ -367,7 +391,7 @@ export class FreeTextAnnotationObj
         this.contents,
         font,
         this.fontSize,
-        this.rect,
+        lastRect,
         this.getJustification(this.textJustification as unknown as string),
         this.textMargin,
         this.styles,
@@ -377,9 +401,9 @@ export class FreeTextAnnotationObj
         this.textColor
       );
     }
-    this.appearanceStream.N = xobj;
+    this.appearanceStream.N = xObj;
     this.additional_objects_to_write.push({
-      obj: xobj,
+      obj: xObj,
       func: (ob: any, cryptoInterface: CryptoInterface) =>
         ob.writeXObject(cryptoInterface, false),
     });

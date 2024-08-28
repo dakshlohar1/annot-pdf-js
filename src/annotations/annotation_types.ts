@@ -566,6 +566,7 @@ export interface MarkupAnnotation extends BaseAnnotation {
   subject?: string; // /Subj
   replyType?: ReplyTypes; // /RT
   angle?: number;
+  pageHeight?: number;
 }
 
 export class MarkupAnnotationObj
@@ -579,6 +580,7 @@ export class MarkupAnnotationObj
   richtextString?: string;
   angle?: number = 0;
   ctm: ICTM = [1, 0, 0, 1, 0, 0];
+  pageHeight?: number = 0;
 
   constructor() {
     super();
@@ -665,17 +667,6 @@ export class MarkupAnnotationObj
       ret.push(WriterUtil.BRACKET_END);
       ret.push(WriterUtil.SPACE);
     }
-    // if ((this.angle as number) > 0) {
-    //   ret = ret.concat(WriterUtil.CONTENT_MATRIX);
-    //   ret.push(WriterUtil.SPACE);
-    //   ret = ret.concat(
-    //     WriterUtil.writeNumberArray(
-    //       WriterUtil.rotate(this.angle as number, this.ctm, { origin: null })
-    //     ) as number[]
-    //   );
-    //   ret.push(WriterUtil.SPACE);
-    // }
-
     return ret;
   }
 
