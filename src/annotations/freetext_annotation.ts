@@ -319,20 +319,21 @@ export class FreeTextAnnotationObj
     xObj.new_object = true;
     const lastRect = this.rect;
     if (this.pageHeight) {
-      const updatedRect = [
-        this.rect[0] -
+      const updatedBBox = [
+        this.bBox[0] -
           (this?.border?.border_width ? this.border.border_width : 0),
         this.pageHeight -
-          this.rect[3] -
+          this.bBox[3] -
           (this?.border?.border_width ? this.border.border_width : 0),
-        this.rect[2] +
+        this.bBox[2] +
           (this?.border?.border_width ? this.border.border_width : 0),
         this.pageHeight -
-          this.rect[1] +
+          this.bBox[1] +
           (this?.border?.border_width ? this.border.border_width : 0),
       ];
-      xObj.bBox = updatedRect; //left, bottom, right, and top edges
-      this.rect = updatedRect;
+      // this.bBox = updatedBBox;
+      xObj.bBox = updatedBBox; //left, bottom, right, and top edges
+      this.rect = updatedBBox;
     } else {
       xObj.bBox = this.rect; //left, bottom, right, and top edges
     }
@@ -363,9 +364,19 @@ export class FreeTextAnnotationObj
     if (this.pageHeight) {
       // flip the y axis
       const ctm = [1, 0, 0, -1, 0, this.pageHeight] as ICTM;
-      this.ctm = ctm;
       go.addCurrentTransformationMatrix(ctm);
     }
+    if (this.angle) {
+      const newCtm = this.rotate(this.angle, {
+        // origin will be the center of the bounding box
+        origin: [
+          (this.bBox[0] + this.bBox[2]) / 2,
+          (this.bBox[1] + this.bBox[3]) / 2,
+        ],
+      });
+      go.addCurrentTransformationMatrix(newCtm);
+    }
+
     if (this.color) {
       go.setFillColor(this.color);
     }

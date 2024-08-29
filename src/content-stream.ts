@@ -162,11 +162,12 @@ export class GraphicsObject extends Operator {
       this.addOperator("l", [x_1 + cornerRadius, y_1]);
       this.addOperator("c", [x_1, y_1, x_1, y_1, x_1, y_1 + cornerRadius]);
     } else {
-      this.addOperator("m", [x_1 - linewidth / 2, y_2]);
-      this.addOperator("l", [x_2, y_2]);
-      this.addOperator("l", [x_2, y_1]);
-      this.addOperator("l", [x_1, y_1]);
-      this.addOperator("l", [x_1, y_2]);
+      this.addOperator("re", [
+        x_1,
+        y_1,
+        Math.abs(x_2 - x_1),
+        Math.abs(y_2 - y_1),
+      ]);
     }
     this.addOperator(shouldFill ? (linewidth ? "B" : "f") : "S");
     return this;

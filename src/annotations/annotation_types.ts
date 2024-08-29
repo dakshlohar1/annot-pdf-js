@@ -545,6 +545,15 @@ export class BaseAnnotationObj implements BaseAnnotation {
   }
 }
 
+function round(number: number, precision: number = 0): number {
+  if (precision === 0) {
+    return Math.round(number);
+  }
+
+  const factor = Math.pow(10, precision);
+  return Math.round(number * factor) / factor;
+}
+
 /**
  * A helper class that is only used if a parsed annotation type cannot be identified and translated into a supported annotation type
  * */
@@ -567,6 +576,7 @@ export interface MarkupAnnotation extends BaseAnnotation {
   replyType?: ReplyTypes; // /RT
   angle?: number;
   pageHeight?: number;
+  bBox: number[];
 }
 
 export class MarkupAnnotationObj
@@ -581,9 +591,67 @@ export class MarkupAnnotationObj
   angle?: number = 0;
   ctm: ICTM = [1, 0, 0, 1, 0, 0];
   pageHeight?: number = 0;
+  bBox: number[] = [];
 
   constructor() {
     super();
+  }
+
+  rotate(angle: number, options = {} as any) {
+    let y;
+    const rad = (angle * Math.PI) / 180;
+    const cos = Math.cos(rad);
+    const sin = Math.sin(rad);
+    let x = (y = 0);
+
+    if (options.origin != null) {
+      [x, y] = options.origin;
+      const x1 = x * cos - y * sin;
+      const y1 = x * sin + y * cos;
+      x -= x1;
+      y -= y1;
+    }
+
+    return this.transform(cos, sin, -sin, cos, x, y);
+  }
+
+  transform(
+    m11: number,
+    m12: number,
+    m21: number,
+    m22: number,
+    dx: number,
+    dy: number
+  ) {
+    // keep track of the current transformation matrix
+    if (
+      m11 === 1 &&
+      m12 === 0 &&
+      m21 === 0 &&
+      m22 === 1 &&
+      dx === 0 &&
+      dy === 0
+    ) {
+      // Ignore identity transforms
+      return this.ctm;
+    }
+    const m = this.ctm;
+    const [m0, m1, m2, m3, m4, m5] = m;
+    m[0] = m0 * m11 + m2 * m12;
+    m[1] = m1 * m11 + m3 * m12;
+    m[2] = m0 * m21 + m2 * m22;
+    m[3] = m1 * m21 + m3 * m22;
+    m[4] = m0 * dx + m2 * dy + m4;
+    m[5] = m1 * dx + m3 * dy + m5;
+
+    return [
+      round(m11, 15),
+      round(m12, 15),
+      round(m21, 15),
+      round(m22, 15),
+      round(dx, 15),
+      round(dy, 15),
+    ];
   }
 
   public writeAnnotationObject(cryptoInterface: CryptoInterface): number[] {
