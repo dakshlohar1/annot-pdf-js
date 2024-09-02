@@ -45,7 +45,22 @@ export class LineAnnotationObj
       ret = ret.concat(Util.LITERAL_STRING_END);
       ret = ret.concat(WriterUtil.LINE);
       ret.push(WriterUtil.SPACE);
-      ret = ret.concat(WriterUtil.writeNumberArray(this.points));
+      // subtract border width from points
+      // and also flip the y axis
+      const updatedPoints = this.points.map((point, index) => {
+        if (index % 2 === 0) {
+          return (
+            point - (this?.border?.border_width ? this.border.border_width : 0)
+          );
+        } else {
+          return (
+            (this.pageHeight || 0) -
+            point -
+            (this?.border?.border_width ? this.border.border_width : 0)
+          );
+        }
+      });
+      ret = ret.concat(WriterUtil.writeNumberArray(updatedPoints));
       ret.push(WriterUtil.SPACE);
     }
 
