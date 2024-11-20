@@ -27,6 +27,7 @@ import { Util } from "./util";
 import { Writer } from "./writer";
 import { Font } from "./fonts";
 import { LineAnnotationObj } from "./annotations/line_annotation";
+import { Base64, base64ToArrayBuffer } from "./file-util";
 
 export class ParameterParser {
   /**
@@ -148,39 +149,76 @@ export class AnnotationFactory {
    * Load a PDF file referenced by the given 'path'
    * */
   public static loadFile(
-    path: string,
+    path: string | ArrayBuffer | File,
     userPassword: string = "",
     ownerPassword: string = ""
   ): Promise<AnnotationFactory> {
     return new Promise<AnnotationFactory>((resolve) => {
       if (typeof window !== "undefined") {
         // browser environment
-        fetch(path)
-          .then((r) => r.blob())
-          .then((data) => {
-            let reader: any = new FileReader();
+        const isBase64 = typeof path === "string" && path.startsWith("data:");
+        const isArrayBuffer = path instanceof ArrayBuffer;
+        const isFileObject = path instanceof File;
+        const isFileUrlOrHttpUrl =
+          typeof path === "string" &&
+          (path.startsWith("file:") ||
+            path.startsWith("http:") ||
+            path.startsWith("https:"));
 
-            reader.onload = () => {
+        console.log("file type flags: ", {
+          isBase64,
+          isArrayBuffer,
+          isFileObject,
+          isFileUrlOrHttpUrl,
+        });
+        if (isBase64) {
+          // convert base64 to arraybuffer
+          const arrayBuffer = base64ToArrayBuffer(path as Base64);
+          resolve(
+            new AnnotationFactory(
+              arrayBuffer as Uint8Array,
+              userPassword,
+              ownerPassword
+            )
+          );
+        } else if (isArrayBuffer) {
+          if ((path as ArrayBuffer).byteLength === 0) {
+            throw new Error("Annot-PDF: File array buffer is detached");
+          }
+          resolve(
+            new AnnotationFactory(
+              path as Uint8Array,
+              userPassword,
+              ownerPassword
+            )
+          );
+        } else if (isFileObject) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            resolve(
+              new AnnotationFactory(
+                event.target?.result as Uint8Array,
+                userPassword,
+                ownerPassword
+              )
+            );
+          };
+          reader.readAsArrayBuffer(path as File);
+        } else if (isFileUrlOrHttpUrl) {
+          // fetch the file
+          fetch(path as string)
+            .then((response) => response.arrayBuffer())
+            .then((arrayBuffer) =>
               resolve(
                 new AnnotationFactory(
-                  reader.result,
+                  new Uint8Array(arrayBuffer),
                   userPassword,
                   ownerPassword
                 )
-              );
-            };
-
-            reader.readAsArrayBuffer(data);
-          });
-      }
-      // else if (typeof process === "object") {
-      //   // node environment
-      //   let fs = require("fs");
-      //   let data = fs.readFileSync(path);
-
-      //   resolve(new AnnotationFactory(data, userPassword, ownerPassword));
-      // }
-      else {
+              )
+            );
+        }
+      } else {
         throw Error("Unsupported environment");
       }
     });
